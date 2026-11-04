@@ -82,3 +82,134 @@
   .co { margin: 24px 16px; padding: 20px; }
   .co-row { grid-template-columns: 1fr; }
 }
+
+/* ---------- payment method ---------- */
+.co-pay {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.co-pay__option {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border: 1.5px solid #d9cfb8;
+  border-radius: 12px;
+  background: #fff;
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.co-pay__option input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.co-pay__option span {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.co-pay__option small {
+  color: #666;
+  font-size: 0.82rem;
+}
+
+.co-pay__option--active {
+  border-color: #000;
+  box-shadow: 0 0 0 1.5px #000;
+}
+
+.co-pay__option:has(input:focus-visible) {
+  outline: 2px solid #000;
+  outline-offset: 2px;
+}
+
+/* ---------- UPI payment step ---------- */
+.upi {
+  align-items: center;
+  text-align: center;
+}
+
+.upi__hint {
+  margin: 0;
+  color: #444;
+}
+
+.upi__qr {
+  width: min(280px, 100%);
+  aspect-ratio: 1;
+  object-fit: contain;
+  padding: 10px;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+}
+
+.upi__or {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  color: #888;
+}
+
+.upi__or::before,
+.upi__or::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: #d9cfb8;
+}
+
+.upi__btn {
+  display: block;
+  width: 100%;
+  text-decoration: none;
+}
+
+.upi__status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 4px 0 0;
+  color: #555;
+  font-size: 0.92rem;
+}
+
+.upi__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #f0a500;
+  animation: upi-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes upi-pulse {
+  50% { opacity: 0.3; }
+}
+
+.upi__links {
+  display: flex;
+  gap: 20px;
+}
+
+.upi__links button {
+  border: 0;
+  background: none;
+  color: #111;
+  font: inherit;
+  font-size: 0.92rem;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+@media (max-width: 600px) {
+  .co-pay { grid-template-columns: 1fr; }
+  .upi__links { flex-direction: column; gap: 10px; }
+}

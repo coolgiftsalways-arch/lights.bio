@@ -25,8 +25,15 @@ export default function OrderResult({ success = false }) {
       <div className="cartpage__empty">
         {success ? (
           <>
-            <h1>Thank you! 🌱</h1>
-            <p>Your payment was successful and your order is confirmed.</p>
+                        <h1>Thank you! 🌱</h1>
+            {order?.paymentMethod === "cod" ? (
+              <p>
+                Your order is confirmed. Please keep <strong>{formatPrice(order.amount)}</strong> ready to pay in cash
+                on delivery.
+              </p>
+            ) : (
+              <p>Your payment was successful and your order is confirmed.</p>
+            )}
             {order && (
               <p>
                 Order <strong>#{order._id.slice(-6).toUpperCase()}</strong> · {formatPrice(order.amount)}

@@ -60,13 +60,18 @@ const orderSchema = new mongoose.Schema(
       },
     },
     amount: { type: Number, required: true }, // total in paise
+    paymentMethod: { type: String, enum: ["upi", "cod"], required: true, default: "upi" },
     currency: { type: String, default: "INR" },
     status: {
       type: String,
-      enum: ["pending", "paid", "shipped", "delivered", "cancelled"],
+      // pending = waiting for UPI payment, paid = UPI paid, confirmed = COD order placed
+      enum: ["pending", "paid", "confirmed", "shipped", "delivered", "cancelled"],
       default: "pending",
     },
     razorpayPaymentLinkId: { type: String, index: true },
+    razorpayQrId: String,
+    paymentUrl: String, // Razorpay payment link (fixed amount)
+    qrImage: String, // Razorpay UPI QR image (fixed amount)
     razorpayPaymentId: String,
   },
   { timestamps: true }

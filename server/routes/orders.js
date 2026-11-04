@@ -12,11 +12,70 @@ const razorpay = new Razorpay({
   key_secret: process.env.RAZORPAY_KEY_SECRET,
 });
 
+// ---------- helpers ----------
+
+// Take stock for every item; if any item runs out, put back what was taken and return that item.
+async function reserveStock(items) {
+  const done = [];
+  for (const item of items) {
+    const r = await Product.updateOne(
+      { _id: item.product, stock: { $gte: item.quantity } },
+      { $inc: { stock: -item.quantity } }
+    );
+    if (r.modifiedCount === 0) {
+      for (const d of done) await Product.updateOne({ _id: d.product }, { $inc: { stock: d.quantity } });
+      return item;
+    }
+    done.push(item);
+  }
+  return null;
+}
+
+// Mark a pending UPI order as paid exactly once, take stock, and close the other payment option.
+async function markPaid(orderId, paymentId) {
+  const order = await Order.findOneAndUpdate(
+    { _id: orderId, status: "pending" },
+    { status: "paid", razorpayPaymentId: paymentId },
+    { returnDocument: "after" }
+  );
+  if (!order) return; // already handled
+
+  const outOfStock = await reserveStock(order.items);
+  if (outOfStock) console.warn(`Stock ran out for ${outOfStock.name} on PAID order ${order._id} — handle manually.`);
+
+  // Stop the customer paying twice through the other option (best effort)
+  if (order.razorpayQrId) razorpay.qrCode.close(order.razorpayQrId).catch(() => {});
+  if (order.razorpayPaymentLinkId) razorpay.paymentLink.cancel(order.razorpayPaymentLinkId).catch(() => {});
+}
+
+// Ask Razorpay whether a pending UPI order has been paid (via QR or link).
+async function syncPayment(order) {
+  if (order.status !== "pending" || order.paymentMethod !== "upi") return;
+
+  if (order.razorpayQrId) {
+    const qr = await razorpay.qrCode.fetch(order.razorpayQrId);
+    if (qr.payments_amount_received >= order.amount) {
+      const payments = await razorpay.qrCode.fetchAllPayments(order.razorpayQrId);
+      const paid = payments.items?.find((p) => p.status === "captured") || payments.items?.[0];
+      return markPaid(order._id, paid?.id || "qr-payment");
+    }
+  }
+
+  if (order.razorpayPaymentLinkId) {
+    const link = await razorpay.paymentLink.fetch(order.razorpayPaymentLinkId);
+    if (link.status === "paid") {
+      return markPaid(order._id, link.payments?.[0]?.payment_id || "link-payment");
+    }
+  }
+}
+
+// ---------- routes ----------
+
 // POST /api/orders/checkout
-// body: { items: [{ productId, quantity }], customer: {name,email,phone}, shippingAddress: {...} }
-// returns: { paymentUrl } -> frontend redirects the customer there
+// body: { items: [{ productId, quantity }], customer: {...}, shippingAddress: {...}, paymentMethod: "upi" | "cod" }
 router.post("/checkout", async (req, res) => {
   const { items, customer, shippingAddress } = req.body;
+  const paymentMethod = req.body.paymentMethod === "cod" ? "cod" : "upi";
 
   if (!Array.isArray(items) || items.length === 0 || items.length > 20) {
     return res.status(400).json({ message: "Your cart is empty." });
@@ -39,7 +98,7 @@ router.post("/checkout", async (req, res) => {
 
   const amount = orderItems.reduce((sum, i) => sum + i.price * i.quantity, 0);
 
-  const order = new Order({ items: orderItems, customer, shippingAddress, amount });
+  const order = new Order({ items: orderItems, customer, shippingAddress, amount, paymentMethod });
   try {
     await order.validate();
   } catch (err) {
@@ -47,34 +106,68 @@ router.post("/checkout", async (req, res) => {
     return res.status(400).json({ message: first ? first.message : "Please check your details." });
   }
 
-  // Create a Razorpay Payment Link for this exact amount
-  let link;
+  // ----- Cash on Delivery: confirm right away -----
+  if (paymentMethod === "cod") {
+    const outOfStock = await reserveStock(orderItems);
+    if (outOfStock) return res.status(400).json({ message: `${outOfStock.name} just sold out.` });
+    order.status = "confirmed";
+    await order.save();
+    return res.status(201).json({ orderId: order._id, paymentMethod, amount });
+  }
+
+  // ----- UPI: fixed-amount Razorpay QR + payment link for the same order -----
+  const description = orderItems.map((i) => `${i.name} x${i.quantity}`).join(", ").slice(0, 250);
+
   try {
-    link = await razorpay.paymentLink.create({
+    const link = await razorpay.paymentLink.create({
       amount,
       currency: "INR",
-      reference_id: order._id.toString(), // ties the link back to our order
-      description: orderItems.map((i) => `${i.name} x${i.quantity}`).join(", ").slice(0, 2000),
+      reference_id: order._id.toString(),
+      description,
       customer: { name: order.customer.name, email: order.customer.email, contact: `+91${order.customer.phone}` },
       notify: { sms: false, email: false },
       reminder_enable: false,
-      expire_by: Math.floor(Date.now() / 1000) + 60 * 60, // link valid for 1 hour
+      expire_by: Math.floor(Date.now() / 1000) + 60 * 60, // 1 hour
       callback_url: `${process.env.SERVER_URL}/api/orders/payment-callback`,
       callback_method: "get",
     });
+    order.razorpayPaymentLinkId = link.id;
+    order.paymentUrl = link.short_url;
   } catch (err) {
-    console.error("Razorpay error:", err.error || err);
+    console.error("Razorpay payment link error:", err.error || err);
     return res.status(502).json({ message: "Couldn't start payment. Please try again." });
   }
 
-  order.razorpayPaymentLinkId = link.id;
+  // UPI QR is optional: if QR Codes isn't enabled on your Razorpay account, customers still get the link
+  try {
+    const qr = await razorpay.qrCode.create({
+      type: "upi_qr",
+      name: "lights.bio",
+      usage: "single_use",
+      fixed_amount: true,
+      payment_amount: amount,
+      description: `Order ${order._id}`,
+      close_by: Math.floor(Date.now() / 1000) + 30 * 60, // 30 minutes
+      notes: { orderId: order._id.toString() },
+    });
+    order.razorpayQrId = qr.id;
+    order.qrImage = qr.image_url;
+  } catch (err) {
+    console.warn("Razorpay QR not created (is QR Codes enabled on your account?):", err.error?.description || err.message);
+  }
+
   await order.save();
 
-  res.status(201).json({ orderId: order._id, paymentUrl: link.short_url });
+  res.status(201).json({
+    orderId: order._id,
+    paymentMethod,
+    amount,
+    paymentUrl: order.paymentUrl,
+    qrImage: order.qrImage || null,
+  });
 });
 
-// GET /api/orders/payment-callback
-// Razorpay sends the customer here after paying. We verify, then send them to the site.
+// GET /api/orders/payment-callback — Razorpay sends the customer here after paying via the link
 router.get("/payment-callback", async (req, res) => {
   const {
     razorpay_payment_id,
@@ -101,32 +194,31 @@ router.get("/payment-callback", async (req, res) => {
 
   if (!valid || razorpay_payment_link_status !== "paid") return fail(razorpay_payment_link_reference_id);
 
-  // Mark paid only once (refreshing the page won't double-count)
-  const order = await Order.findOneAndUpdate(
-    { razorpayPaymentLinkId: razorpay_payment_link_id, status: "pending" },
-    { status: "paid", razorpayPaymentId: razorpay_payment_id },
-    { returnDocument: "after" }
-  );
-
-  if (order) {
-    for (const item of order.items) {
-      const updated = await Product.updateOne(
-        { _id: item.product, stock: { $gte: item.quantity } },
-        { $inc: { stock: -item.quantity } }
-      );
-      if (updated.modifiedCount === 0) {
-        console.warn(`Stock ran out for ${item.name} on paid order ${order._id} — check this order manually.`);
-      }
-    }
-  }
+  const order = await Order.findOne({ razorpayPaymentLinkId: razorpay_payment_link_id });
+  if (order) await markPaid(order._id, razorpay_payment_id);
 
   res.redirect(`${process.env.CLIENT_URL}/order-success?order=${razorpay_payment_link_reference_id}`);
+});
+
+// GET /api/orders/:id/status — the checkout page polls this while showing the QR
+router.get("/:id/status", async (req, res) => {
+  if (!mongoose.isValidObjectId(req.params.id)) return res.status(404).json({ message: "Order not found" });
+  let order = await Order.findById(req.params.id);
+  if (!order) return res.status(404).json({ message: "Order not found" });
+
+  try {
+    await syncPayment(order);
+    order = await Order.findById(order._id);
+  } catch (err) {
+    console.error("Payment status check failed:", err.error || err.message);
+  }
+  res.json({ status: order.status, paymentMethod: order.paymentMethod });
 });
 
 // GET /api/orders/:id — order confirmation page
 router.get("/:id", async (req, res) => {
   if (!mongoose.isValidObjectId(req.params.id)) return res.status(404).json({ message: "Order not found" });
-  const order = await Order.findById(req.params.id).select("items amount currency status createdAt");
+  const order = await Order.findById(req.params.id).select("items amount currency status paymentMethod createdAt");
   if (!order) return res.status(404).json({ message: "Order not found" });
   res.json(order);
 });

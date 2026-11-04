@@ -1,4 +1,8 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Smartphone, Banknote } from "lucide-react";
+import { API } from "../cart";
+import UpiPayment from "./UpiPayment";
 import "../Style/CheckoutForm.css";
 
 const STATES = [
@@ -27,14 +31,15 @@ function validate(f) {
   return e;
 }
 
-// items: [{ productId, quantity }]. If not passed, reads the cart from localStorage ("cart").
+// items: [{ productId, quantity }]
 export default function CheckoutForm({ items }) {
   const [form, setForm] = useState(EMPTY);
+  const [payment, setPayment] = useState("upi"); // "upi" | "cod"
   const [errors, setErrors] = useState({});
   const [serverError, setServerError] = useState("");
   const [loading, setLoading] = useState(false);
-
-  const cartItems = items ?? JSON.parse(localStorage.getItem("cart") || "[]");
+  const [upiOrder, setUpiOrder] = useState(null); // set after a UPI order is created
+  const navigate = useNavigate();
 
   const update = (e) => {
     const { name, value } = e.target;
@@ -49,35 +54,41 @@ export default function CheckoutForm({ items }) {
     const found = validate(form);
     setErrors(found);
     if (Object.keys(found).length) return;
-
-    if (!cartItems.length) {
-      setServerError("Your cart is empty.");
-      return;
-    }
+    if (!items?.length) return setServerError("Your cart is empty.");
 
     setLoading(true);
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/orders/checkout`, {
+      const res = await fetch(`${API}/orders/checkout`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          items: cartItems.map(({ productId, quantity }) => ({ productId, quantity })),
+          items: items.map(({ productId, quantity }) => ({ productId, quantity })),
           customer: { name: form.name, email: form.email, phone: form.phone },
           shippingAddress: {
             line1: form.line1, line2: form.line2, landmark: form.landmark,
             city: form.city, state: form.state, pincode: form.pincode,
           },
+          paymentMethod: payment,
         }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.message || "Something went wrong. Please try again.");
 
-      window.location.href = data.paymentUrl; // go to Razorpay's payment page
+      if (data.paymentMethod === "cod") {
+        navigate(`/order-success?order=${data.orderId}`);
+      } else {
+        setUpiOrder(data); // show QR + Pay with Razorpay
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
     } catch (err) {
       setServerError(err.message);
+    } finally {
       setLoading(false);
     }
   };
+
+  // Step 2 for UPI: QR code + payment link
+  if (upiOrder) return <UpiPayment order={upiOrder} onCancel={() => setUpiOrder(null)} />;
 
   const field = (name, label, props = {}) => (
     <label className={`co-field ${errors[name] ? "co-field--error" : ""}`}>
@@ -114,10 +125,30 @@ export default function CheckoutForm({ items }) {
         {errors.state && <small>{errors.state}</small>}
       </label>
 
+      <h2>Payment method</h2>
+      <div className="co-pay">
+        <label className={`co-pay__option ${payment === "upi" ? "co-pay__option--active" : ""}`}>
+          <input type="radio" name="payment" value="upi" checked={payment === "upi"} onChange={() => setPayment("upi")} />
+          <Smartphone size={22} />
+          <span>
+            <strong>UPI</strong>
+            <small>Scan QR or pay with Razorpay</small>
+          </span>
+        </label>
+        <label className={`co-pay__option ${payment === "cod" ? "co-pay__option--active" : ""}`}>
+          <input type="radio" name="payment" value="cod" checked={payment === "cod"} onChange={() => setPayment("cod")} />
+          <Banknote size={22} />
+          <span>
+            <strong>Cash on Delivery</strong>
+            <small>Pay when your order arrives</small>
+          </span>
+        </label>
+      </div>
+
       {serverError && <p className="co-server-error">{serverError}</p>}
 
       <button className="co-submit" disabled={loading}>
-        {loading ? "Taking you to payment…" : "Continue to payment"}
+        {loading ? "Please wait…" : payment === "cod" ? "Place order" : "Continue to UPI payment"}
       </button>
     </form>
   );
