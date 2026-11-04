@@ -1,0 +1,233 @@
+.cartpage {
+  min-height: calc(100vh - 76px);
+  padding: 56px 24px 96px;
+  background: #f1dcb3;
+  color: #111;
+  font-family: "DM Sans", sans-serif;
+}
+
+.cartpage__inner {
+  max-width: 1140px;
+  margin: 0 auto;
+}
+
+.cartpage__title {
+  margin: 0 0 36px;
+  font-family: "Playfair Display", serif;
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 500;
+}
+
+.cartpage__layout {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 28px;
+  align-items: start;
+}
+
+.cartpage__layout--checkout {
+  grid-template-columns: 1fr 380px;
+}
+
+/* the checkout form brings its own margins; reset them inside this layout */
+.cartpage__layout--checkout .co {
+  max-width: none;
+  margin: 0;
+}
+
+/* ---------- cart items ---------- */
+.cartpage__list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.citem {
+  display: grid;
+  grid-template-columns: 110px 1fr auto;
+  gap: 18px;
+  align-items: center;
+  padding: 16px;
+  border-radius: 14px;
+  background: #fff8e8;
+}
+
+.citem__img {
+  width: 110px;
+  height: 110px;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+.citem__name {
+  margin: 0 0 4px;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.citem__price {
+  margin: 0 0 12px;
+  color: #555;
+}
+
+.citem__controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.qty {
+  display: inline-flex;
+  align-items: center;
+  border: 1.5px solid #111;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.qty button {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  background: transparent;
+  color: #111;
+  cursor: pointer;
+}
+
+.qty button:hover:not(:disabled) { background: #111; color: #f5f17a; }
+.qty button:disabled { opacity: 0.3; cursor: not-allowed; }
+
+.qty span {
+  min-width: 32px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.citem__remove {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 0;
+  background: none;
+  color: #a33;
+  font: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.citem__remove:hover { text-decoration: underline; }
+
+.citem__total {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+/* ---------- summary box ---------- */
+.summary {
+  position: sticky;
+  top: 100px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 24px;
+  border-radius: 14px;
+  background: #f7a76c;
+}
+
+.summary h2 {
+  margin: 0 0 4px;
+  font-size: 1.25rem;
+}
+
+.summary__row {
+  display: flex;
+  justify-content: space-between;
+}
+
+.summary__row--total {
+  padding-top: 14px;
+  border-top: 1.5px solid rgba(0, 0, 0, 0.2);
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.summary__btn {
+  display: block;
+  margin-top: 6px;
+}
+
+.summary__link {
+  color: #111;
+  font-size: 0.95rem;
+  text-align: center;
+}
+
+.summary__items {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.summary__items li {
+  display: grid;
+  grid-template-columns: 48px 1fr auto;
+  gap: 12px;
+  align-items: center;
+  font-size: 0.95rem;
+}
+
+.summary__items img {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+/* ---------- empty / result states ---------- */
+.cartpage__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  max-width: 480px;
+  margin: 60px auto 0;
+  text-align: center;
+}
+
+.cartpage__empty h1 {
+  margin: 0;
+  font-family: "Playfair Display", serif;
+  font-size: 2.4rem;
+  font-weight: 500;
+}
+
+.cartpage__empty p { margin: 0; }
+
+.cartpage__empty .sbtn {
+  flex: none;
+  margin-top: 10px;
+  padding: 14px 32px;
+}
+
+/* ---------- responsive ---------- */
+@media (max-width: 900px) {
+  .cartpage__layout,
+  .cartpage__layout--checkout { grid-template-columns: 1fr; }
+  .summary { position: static; }
+}
+
+@media (max-width: 560px) {
+  .cartpage { padding: 32px 16px 56px; }
+  .citem { grid-template-columns: 80px 1fr; }
+  .citem__img { width: 80px; height: 80px; }
+  .citem__total { grid-column: 2; }
+}

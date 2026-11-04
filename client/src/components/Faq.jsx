@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { faqs } from "../data";
+import { faqs } from "../../data";
 
 export default function Faq() {
   const [open, setOpen] = useState(null);

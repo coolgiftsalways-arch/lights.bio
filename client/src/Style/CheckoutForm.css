@@ -1,0 +1,84 @@
+.co {
+  max-width: 640px;
+  margin: 48px auto;
+  padding: 32px;
+  background: #fff8e8;
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  font-family: inherit;
+}
+
+.co h2 {
+  margin: 8px 0 0;
+  font-size: 1.3rem;
+}
+
+.co-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.co-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.95rem;
+}
+
+.co-field input,
+.co-field select {
+  padding: 12px 14px;
+  border: 1.5px solid #d9cfb8;
+  border-radius: 10px;
+  background: #fff;
+  font: inherit;
+}
+
+.co-field input:focus,
+.co-field select:focus {
+  outline: none;
+  border-color: #000;
+}
+
+.co-field--error input,
+.co-field--error select {
+  border-color: #c0392b;
+}
+
+.co-field small {
+  color: #c0392b;
+}
+
+.co-server-error {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: #fdecea;
+  color: #c0392b;
+}
+
+.co-submit {
+  margin-top: 8px;
+  padding: 16px;
+  border: none;
+  border-radius: 999px;
+  background: #000;
+  color: #f5f17a;
+  font: inherit;
+  font-size: 1.05rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.co-submit:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+@media (max-width: 600px) {
+  .co { margin: 24px 16px; padding: 20px; }
+  .co-row { grid-template-columns: 1fr; }
+}

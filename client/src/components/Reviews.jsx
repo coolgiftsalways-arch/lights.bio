@@ -1,5 +1,5 @@
 import { useRef } from "react";
-import { reviews } from "../data";
+import { reviews } from "../../data";
 
 export default function Reviews() {
   const row = useRef(null);
