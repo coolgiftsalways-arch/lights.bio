@@ -1,13 +1,17 @@
 import { useLayoutEffect, useRef } from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
+
 import Lenis from "lenis";
 import "lenis/dist/lenis.css";
 import "./index.css";
 
+// COMPONENTS
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 
+// MAIN PAGES
 import Home from "./pages/Home";
+import Blogs from "./pages/Blogs";
 import Products from "./components/Products";
 import ProductDetails from "./components/ProductDetails";
 import FAQs from "./pages/FAQs";
@@ -18,6 +22,11 @@ import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
 import OrderResult from "./pages/OrderResult";
 
+// LEGAL PAGES
+import TermsConditions from "./pages/TermsConditions";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+
+// ADMIN PAGES
 import AdminLogin from "./admin/AdminLogin";
 import AdminLayout from "./admin/AdminLayout";
 import Dashboard from "./admin/Dashboard";
@@ -93,6 +102,12 @@ export default function App() {
           {/* HOME */}
           <Route path="/" element={<Home />} />
 
+          {/* BLOG LISTING */}
+          <Route path="/blogs" element={<Blogs />} />
+
+          {/* INDIVIDUAL BLOG ARTICLES */}
+          <Route path="/blogs/:slug" element={<Blogs />} />
+
           {/* PRODUCTS */}
           <Route path="/products" element={<Products />} />
           <Route path="/product/:id" element={<ProductDetails />} />
@@ -107,6 +122,11 @@ export default function App() {
           <Route path="/unboxing" element={<Unboxing />} />
           <Route path="/care-instructions" element={<CareInstructions />} />
 
+          {/* LEGAL PAGES */}
+          <Route path="/terms-and-conditions" element={<TermsConditions />} />
+
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+
           {/* CART */}
           <Route path="/cart" element={<Cart />} />
 
@@ -115,6 +135,7 @@ export default function App() {
 
           {/* ORDER RESULTS */}
           <Route path="/order-success" element={<OrderResult success />} />
+
           <Route path="/order-failed" element={<OrderResult />} />
 
           {/* PROFILE */}

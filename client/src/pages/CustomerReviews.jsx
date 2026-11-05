@@ -1,675 +1,639 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
+
 import {
   Star,
   ChevronLeft,
   ChevronRight,
-  ArrowUpRight,
   X,
-  Camera,
-  MessageCircle,
-  BadgeCheck,
-  Sparkles,
   SlidersHorizontal,
+  Image as ImageIcon,
 } from "lucide-react";
 
 import "../Style/CustomerReviews.css";
 
-const ratingBreakdown = [
-  { stars: 5, count: 728 },
-  { stars: 4, count: 107 },
-  { stars: 3, count: 94 },
-  { stars: 2, count: 37 },
-  { stars: 1, count: 97 },
+// SETTINGS
+const ITEMS_PER_PAGE = 8;
+const TOTAL_REVIEWS = 100;
+
+// CUSTOMER IMAGES
+// All images are unique. Repeated URLs have been removed.
+const customerImages = [
+  // Your local images
+  "/customer_reviews/User_picture.jpeg",
+  "/customer_reviews/User_picture_1.jpeg",
+  "/customer_reviews/User_picture_2.jpeg",
+  "/customer_reviews/User_picture_3.jpeg",
+  "/customer_reviews/User_picture_4.jpeg",
+  "/customer_reviews/User_picture_5.jpeg",
+  "/customer_reviews/User_picture_6.jpeg",
+  "/customer_reviews/User_picture_7.jpeg",
+  "/customer_reviews/User_picture_8.jpeg",
+
+  // New images you provided
+  "https://tse1.mm.bing.net/th/id/OIP.VDyc3earWa_XVvyT8z23YgHaFq?r=0&pid=Api&h=220&P=0",
+  "https://tse1.mm.bing.net/th/id/OIP.gdhZVvRBMY9EDA3MiX593gHaE7?r=0&pid=Api&h=220&P=0",
+  "https://tse2.mm.bing.net/th/id/OIP.qqo2fF17sQjknrVyqmOuHAHaEK?r=0&pid=Api&h=220&P=0",
+  "https://tse1.mm.bing.net/th/id/OIP.qUIwY-SVEd41pBynsP7flwHaEy?r=0&pid=Api&h=220&P=0",
+  "https://tse2.mm.bing.net/th/id/OIP.CHlVaQ-QPbukaoudPqDsyAHaEK?r=0&pid=Api&h=220&P=0",
+  "https://tse1.mm.bing.net/th/id/OIP.OatnubwqPR0fVqCKgx8k-QHaD3?r=0&pid=Api&h=220&P=0",
+  "https://tse2.mm.bing.net/th/id/OIP.sZ6Q-6a1iXNSETo3Fn9dLwHaLH?r=0&pid=Api&h=220&P=0",
+  "https://tse1.mm.bing.net/th/id/OIP.oLOcy0LhYegrQLqAZAfIxAHaEK?r=0&pid=Api&h=220&P=0",
+  "https://tse4.mm.bing.net/th/id/OIP.ZjyFpCaVdBpqUqFeeU4gyQHaJ4?r=0&pid=Api&h=220&P=0",
+  "https://tse1.mm.bing.net/th/id/OIP.i0-1kUaVN9y-DBjBu_4eFgHaJ4?r=0&pid=Api&h=220&P=0",
+  "https://tse2.mm.bing.net/th/id/OIP.r2xTRtndaCmtvIhmCWmy_gHaE8?r=0&pid=Api&h=220&P=0",
+  "https://tse1.mm.bing.net/th/id/OIP.iPLivEbHOVAkPIBWOEFx_QHaEL?r=0&pid=Api&h=220&P=0",
+  "https://tse1.mm.bing.net/th/id/OIP.P-2I4YLBJHkYVm4YGZkr_AHaEK?r=0&pid=Api&h=220&P=0",
+  "https://tse3.mm.bing.net/th/id/OIP.tmY0QkZW5H7cyzslNn354wHaJ4?r=0&pid=Api&h=220&P=0",
+  "https://tse4.mm.bing.net/th/id/OIP.I8trEpKN-RdspRyauWqpdgHaHa?r=0&pid=Api&h=220&P=0",
 ];
 
-const reviews = [
-  {
-    id: 1,
-    name: "Zachary Krackow",
-    initial: "Z",
-    date: "2026-09-18",
-    rating: 5,
-    verified: true,
-    title: "My second year growing Light Bio petunias",
-    text: "This is my second year growing the Light Bio petunias, and I've really enjoyed having them. The biggest thing I learned is that they need WAY more light than I originally expected. Full sun is an absolute must if you want them to really take off and perform well. Once I figured that out, I had much better results. They're such a fun and unique plant to grow, and I'm already excited for next year. I've got some much bigger plans for them next season!",
-    reply:
-      "Hi Zachary, thank you so much for leaving us a 5-star review! We're so happy you've been enjoying growing them. Quality and quantity of light are definitely key factors in keeping them glowing and happy. If you have any issues or concerns in the future, please reach out to our team. With appreciation, The Light Bio Team.",
-    dateLabel: "09/18/2026",
-  },
-  {
-    id: 2,
-    name: "Hector Chavez",
-    initial: "H",
-    date: "2026-09-09",
-    rating: 5,
-    verified: false,
-    title: "Wonderful plant and great customer service",
-    text: "Wonderful plant that glows bright and great customer service! You are covered if anything goes wrong, and the customer service here is great. They stand by their products. My plant did glow nicely for the time it was alive. Excited for next growing season!",
-    reply:
-      "Thank you so much for sharing this. We're glad to hear how much you enjoyed the glow while your plant was thriving. Plants can sometimes be stressed from transit, and Firefly Petunias are especially sensitive to heat. We hope you'll consider giving them another try next spring!",
-    dateLabel: "09/09/2026",
-  },
-  {
-    id: 3,
-    name: "April Lawrence",
-    initial: "A",
-    date: "2026-08-31",
-    rating: 1,
-    verified: true,
-    title: "Every one I've gotten has ended up dying",
-    text: "Every one I've gotten has ended up dying. The last three that I got were sick from the start. I got them to make a slight comeback and start to flourish, but then they started to die again and never recovered. I know I have an issue with black flies, but I don't think they can make them deteriorate that quickly. These last three never even bloomed again. I get excited each year to try my luck again, but it is an expensive gift to myself that only ever ends up dying.",
-    reply:
-      "Hi April, we're so sorry to hear your plants arrived in bad shape. We checked your order and realized it may have shipped in the heat, which could have affected their health. We stand by our plants and would love to help find a solution for you.",
-    dateLabel: "08/31/2026",
-  },
-  {
-    id: 4,
-    name: "Karima Kamal",
-    initial: "K",
-    date: "2026-08-29",
-    rating: 5,
-    verified: false,
-    title: "Happy with Light Bio",
-    text: "I previously wrote a review based on an experience that unfortunately did not meet my expectations. However, with the help of the customer service team, the issue was quickly addressed and resolved. I truly appreciate their professionalism, responsiveness, and commitment to making things right. I'm happy to support this growing company and look forward to seeing them continue to grow and succeed!",
-    reply:
-      "Hi Karima, thank you so much for such kind words. It really means a lot to know the experience was turned around for you. We're glad to have your support, and we're looking forward to continuing to grow and improve.",
-    dateLabel: "08/29/2026",
-  },
-  {
-    id: 5,
-    name: "Thom",
-    initial: "T",
-    date: "2026-08-09",
-    rating: 5,
-    verified: false,
-    title: "Pretty cool!",
-    text: "Didn't know what to expect and was pleasantly surprised to see the glow in the flower! They were delivered on time and were packaged beyond careful, maybe a little OCD? It was a really fun experience seeing the flowers glow.",
-    reply:
-      "Hi Thom, thanks so much for the 5-star review! We definitely take our plant packaging very seriously. Guaranteeing these glowing beauties arrive safe and sound takes a little extra care. We're thrilled you were pleasantly surprised by the glow!",
-    dateLabel: "08/09/2026",
-  },
+// CUSTOMER NAMES
+const names = [
+  "Aarav Sharma",
+  "Priya Mehta",
+  "Rohan Patel",
+  "Ananya Singh",
+  "Ishaan Kapoor",
+  "Sneha Desai",
+  "Kabir Khan",
+  "Aisha Verma",
+  "Arjun Malhotra",
+  "Diya Shah",
+  "Vivaan Joshi",
+  "Meera Iyer",
+  "Aditya Rao",
+  "Kavya Nair",
+  "Reyansh Gupta",
+  "Sana Sheikh",
+  "Rahul Kulkarni",
+  "Tanya Roy",
+  "Dev Malhotra",
+  "Nisha Jain",
+  "Karan Sethi",
+  "Pooja Mishra",
+  "Yash Thakur",
+  "Ira Banerjee",
+  "Manav Bhatia",
+  "Riya Chawla",
+  "Siddharth Bose",
+  "Mira Thomas",
+  "Ayaan Qureshi",
+  "Neha Pillai",
+  "Krish Reddy",
+  "Simran Kaur",
+  "Atharv Joshi",
+  "Tara Menon",
+  "Dhruv Saxena",
+  "Ishita Das",
+  "Veer Prasad",
+  "Anika George",
+  "Omkar Patil",
+  "Zoya Ali",
+  "Harsh Vardhan",
+  "Mahi Agarwal",
+  "Neil Fernandes",
+  "Sanya Arora",
+  "Ritvik Sen",
+  "Aditi Ghosh",
+  "Parth Shah",
+  "Naina Kapoor",
+  "Samar Khan",
+  "Myra Sinha",
+  "Rudra Das",
+  "Lavanya Rao",
+  "Aman Choudhary",
+  "Tia Mukherjee",
+  "Sahil Jain",
+  "Kiara Dutta",
+  "Raghav Bansal",
+  "Ishani Roy",
+  "Varun Nair",
+  "Alisha Thomas",
+  "Aryan Sood",
+  "Navya Reddy",
+  "Shivam Yadav",
+  "Rhea Malhotra",
+  "Kunal Mehra",
+  "Avni Shah",
+  "Abhinav Rao",
+  "Esha Kapoor",
+  "Pranav Kulkarni",
+  "Misha Sen",
+  "Tanmay Joshi",
+  "Aarohi Patel",
+  "Rishabh Verma",
+  "Jhanvi Iyer",
+  "Ansh Gupta",
+  "Sia Mehta",
+  "Mohit Sinha",
+  "Nandini Bose",
+  "Tushar Pillai",
+  "Aanya Khan",
+  "Saurabh Das",
+  "Ishika Nair",
+  "Gaurav Roy",
+  "Vanya Sharma",
+  "Rajat Bhatia",
+  "Ayesha Qureshi",
+  "Nikhil Patil",
+  "Pari Chawla",
+  "Akash Menon",
+  "Ritika Jain",
+  "Shaan Fernandes",
+  "Manya Agarwal",
+  "Deepak Sethi",
+  "Aaradhya Mishra",
+  "Rohan Bose",
+  "Suhana Ali",
+  "Jayant Rao",
+  "Trisha George",
+  "Vihaan Arora",
+  "Zara Sheikh",
 ];
 
-const highlights = [
-  {
-    quote:
-      "Beyond my expectations. I had no idea they would grow in profusion and glow so brightly.",
-    label: "THE GLOW",
-  },
-  {
-    quote:
-      "Brightest spot in my garden. I own a piece of history and I'm really proud to support the team!",
-    label: "THE EXPERIENCE",
-  },
-  {
-    quote:
-      "The soft, natural glow creates an almost fairy-tale ambiance in the garden.",
-    label: "THE FLOWERS",
-  },
+// REVIEW TITLES
+const reviewTitles = [
+  "Beautiful addition to my home",
+  "Absolutely love this plant",
+  "Looks even better in person",
+  "A lovely touch of greenery",
+  "Great packaging and presentation",
+  "A refreshing change for my space",
+  "Very happy with my purchase",
+  "Such a beautiful plant",
+  "Perfect for my living room",
+  "A wonderful gifting option",
 ];
 
-const topics = ["Flowers", "Packaging", "Glow", "Customer service", "Plants"];
-
-const galleryImages = [
-  "https://images.unsplash.com/photo-1490750967868-88aa4486c946?w=700",
-  "https://images.unsplash.com/photo-1497250681960-ef046c08a56e?w=700",
-  "https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=700",
-  "https://images.unsplash.com/photo-1501004318641-b39e6451bec6?w=700",
-  "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=700",
-  "https://images.unsplash.com/photo-1509423350716-97f9360b4e09?w=700",
+// REVIEW CONTENT
+const reviewTexts = [
+  "The plant looks beautiful and adds a fresh, natural feel to my space. I really like the overall presentation.",
+  "I loved the way it was packed. It arrived looking lovely and made a great addition to my home.",
+  "The design and quality look great. It fits perfectly into my room and gives the space a refreshing feel.",
+  "A beautiful product with a premium look. I am happy with how it looks on my desk.",
+  "Really nice experience from browsing to delivery. The plant looks lovely in my home.",
+  "I wanted something different for my space and this was a lovely choice. The details look great.",
+  "The packaging was neat and the plant looks just like what I expected. Very pleased with it.",
+  "It adds a nice natural touch to my room. I would consider ordering another one.",
 ];
 
-function Stars({ rating, size = 17 }) {
+// GENERATE REVIEWS
+const reviews = Array.from({ length: TOTAL_REVIEWS }, (_, index) => ({
+  id: index + 1,
+  name: names[index],
+
+  initials: names[index]
+    .split(" ")
+    .map((part) => part[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase(),
+
+  rating: index % 11 === 0 ? 4 : 5,
+
+  title: reviewTitles[index % reviewTitles.length],
+
+  text: reviewTexts[index % reviewTexts.length],
+
+  date: new Date(
+    2026,
+    9 - Math.floor(index / 12),
+    28 - (index % 25),
+  ).toLocaleDateString("en-IN", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  }),
+
+  verified: index % 4 !== 3,
+
+  // Attach images to selected reviews
+  image:
+    index % 5 === 0
+      ? customerImages[(Math.floor(index / 5) + 1) % customerImages.length]
+      : null,
+}));
+
+// STAR COMPONENT
+function Stars({ rating, size = 15 }) {
   return (
-    <span className="cr-stars" aria-label={`${rating} out of 5 stars`}>
+    <div className="cr-stars" aria-label={`${rating} out of 5 stars`}>
       {Array.from({ length: 5 }, (_, index) => (
         <Star
           key={index}
           size={size}
           fill={index < rating ? "currentColor" : "none"}
-          strokeWidth={1.5}
+          strokeWidth={1.6}
         />
       ))}
-    </span>
+    </div>
   );
 }
 
+// MAIN COMPONENT
 export default function CustomerReviews() {
-  const [ratingFilter, setRatingFilter] = useState("all");
-  const [sortBy, setSortBy] = useState("recent");
-  const [page, setPage] = useState(1);
-  const [expandedReview, setExpandedReview] = useState(null);
-  const [showReviewForm, setShowReviewForm] = useState(false);
-  const [showGallery, setShowGallery] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [selectedRating, setSelectedRating] = useState("all");
+  const [sortBy, setSortBy] = useState("newest");
+  const [selectedImage, setSelectedImage] = useState(null);
 
-  const reviewsPerPage = 3;
-
+  // FILTER AND SORT REVIEWS
   const filteredReviews = useMemo(() => {
     let result = [...reviews];
 
-    if (ratingFilter !== "all") {
+    if (selectedRating !== "all") {
       result = result.filter(
-        (review) => review.rating === Number(ratingFilter),
+        (review) => review.rating === Number(selectedRating),
       );
     }
 
-    if (sortBy === "recent") {
-      result.sort((a, b) => new Date(b.date) - new Date(a.date));
-    } else if (sortBy === "highest") {
-      result.sort((a, b) => b.rating - a.rating);
+    if (sortBy === "highest") {
+      result.sort((a, b) => b.rating - a.rating || b.id - a.id);
     } else if (sortBy === "lowest") {
-      result.sort((a, b) => a.rating - b.rating);
+      result.sort((a, b) => a.rating - b.rating || b.id - a.id);
+    } else {
+      result.sort((a, b) => b.id - a.id);
     }
 
     return result;
-  }, [ratingFilter, sortBy]);
+  }, [selectedRating, sortBy]);
 
+  // PAGINATION
   const totalPages = Math.max(
     1,
-    Math.ceil(filteredReviews.length / reviewsPerPage),
+    Math.ceil(filteredReviews.length / ITEMS_PER_PAGE),
   );
 
-  const currentReviews = filteredReviews.slice(
-    (page - 1) * reviewsPerPage,
-    page * reviewsPerPage,
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = Math.min(
+    startIndex + ITEMS_PER_PAGE,
+    filteredReviews.length,
   );
 
-  const changeFilter = (value) => {
-    setRatingFilter(value);
-    setPage(1);
+  const visibleReviews = filteredReviews.slice(startIndex, endIndex);
+
+  // RESET PAGE IF FILTER CHANGES
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
+
+  // LIGHTBOX SCROLL LOCK
+  useEffect(() => {
+    document.body.style.overflow = selectedImage ? "hidden" : "";
+
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [selectedImage]);
+
+  // CLOSE LIGHTBOX WITH ESCAPE
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
+        setSelectedImage(null);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
+
+  // PAGE NAVIGATION
+  const goToPage = (page) => {
+    const nextPage = Math.min(Math.max(page, 1), totalPages);
+
+    setCurrentPage(nextPage);
+
+    document.querySelector(".cr-reviews-section")?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
   };
 
-  const changeSort = (value) => {
-    setSortBy(value);
-    setPage(1);
+  // RATING COUNTS
+  const ratingCounts = {
+    5: reviews.filter((review) => review.rating === 5).length,
+    4: reviews.filter((review) => review.rating === 4).length,
+    3: reviews.filter((review) => review.rating === 3).length,
+    2: reviews.filter((review) => review.rating === 2).length,
+    1: reviews.filter((review) => review.rating === 1).length,
   };
 
-  const handleReviewSubmit = (event) => {
-    event.preventDefault();
-    setSubmitted(true);
-  };
+  // AVERAGE RATING
+  const averageRating = (
+    reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length
+  ).toFixed(1);
 
   return (
     <main className="customer-reviews">
-      {/* HERO */}
+      {/* HERO SECTION */}
       <section className="cr-hero">
-        <div className="cr-hero-orb cr-hero-orb-one" />
-        <div className="cr-hero-orb cr-hero-orb-two" />
-
-        <div className="cr-container cr-hero-inner">
-          <div className="cr-eyebrow">
-            <span />
-            REAL EXPERIENCES, REAL GROWTH
-          </div>
+        <div className="cr-hero-content">
+          <span className="cr-eyebrow">THE NIVELY COMMUNITY</span>
 
           <h1>
-            Customer
+            Real spaces.
             <br />
-            <em>Reviews.</em>
+            <em>Green stories.</em>
           </h1>
 
-          <div className="cr-hero-bottom">
-            <p>
-              Every garden has a story. Discover what our growing community
-              thinks about their experience with us.
-            </p>
+          <p>
+            A closer look at the plants, spaces and little moments our community
+            loves.
+          </p>
 
-            <a href="#cr-reviews" className="cr-hero-link">
-              EXPLORE REVIEWS
-              <ArrowUpRight size={18} />
-            </a>
-          </div>
-
-          <div className="cr-hero-decoration">GROW TOGETHER</div>
+          <a href="#reviews" className="cr-hero-link">
+            EXPLORE REVIEWS <span>↓</span>
+          </a>
         </div>
+
+        <div className="cr-hero-image">
+          <img src={customerImages[0]} alt="Customer's beautiful plant" />
+        </div>
+
+        <div className="cr-hero-caption">GROW A LITTLE HAPPINESS</div>
       </section>
 
-      {/* RATING OVERVIEW */}
-      <section className="cr-overview cr-container">
-        <div className="cr-overview-heading">
-          <div>
-            <span className="cr-section-label">01 / THE COMMUNITY</span>
-            <h2>
-              Your words.
-              <br />
-              <em>Our growth.</em>
-            </h2>
-          </div>
+      {/* RATING SUMMARY */}
+      <section className="cr-summary">
+        <div className="cr-summary-intro">
+          <span className="cr-eyebrow">KIND WORDS</span>
+
+          <h2>Loved by plant people.</h2>
 
           <p>
-            We value constructive feedback. Our support channels and social
-            media pages are governed by community standards to help create a
-            respectful environment for everyone.
+            Discover what customers are saying about their Nively experience.
           </p>
         </div>
 
-        <div className="cr-rating-panel">
-          <div className="cr-rating-main">
-            <span className="cr-rating-number">4.3</span>
-            <Stars rating={4} size={23} />
-            <span className="cr-rating-total">Based on 1,063 reviews</span>
-            <button
-              className="cr-write-button"
-              onClick={() => {
-                setShowReviewForm(true);
-                setSubmitted(false);
-              }}
-            >
-              Write a review <ArrowUpRight size={17} />
-            </button>
-          </div>
+        <div className="cr-rating-main">
+          <strong>{averageRating}</strong>
 
-          <div className="cr-rating-breakdown">
-            {ratingBreakdown.map((item) => (
-              <button
-                className={`cr-rating-row ${
-                  ratingFilter === String(item.stars) ? "selected" : ""
-                }`}
-                key={item.stars}
-                onClick={() =>
-                  changeFilter(
-                    ratingFilter === String(item.stars)
-                      ? "all"
-                      : String(item.stars),
-                  )
-                }
-              >
-                <span>{item.stars}</span>
-                <Star size={13} fill="currentColor" />
-                <span className="cr-rating-bar">
-                  <span
-                    style={{
-                      width: `${(item.count / 1063) * 100}%`,
-                    }}
-                  />
-                </span>
-                <span className="cr-rating-count">{item.count}</span>
-              </button>
-            ))}
-            {ratingFilter !== "all" && (
-              <button
-                className="cr-clear-filter"
-                onClick={() => changeFilter("all")}
-              >
-                Clear rating filter
-              </button>
-            )}
-          </div>
-        </div>
-      </section>
+          <Stars rating={5} size={20} />
 
-      {/* AI SUMMARY */}
-      <section className="cr-summary-section">
-        <div className="cr-container">
-          <div className="cr-summary-top">
-            <div className="cr-summary-icon">
-              <Sparkles size={21} />
-            </div>
-            <div>
-              <span className="cr-section-label">02 / THE BIG PICTURE</span>
-              <h2>
-                Customers <em>about us.</em>
-              </h2>
-            </div>
-            <span className="cr-ai-label">AI REVIEW SUMMARY</span>
-          </div>
-
-          <div className="cr-summary-content">
-            <p>
-              Customers love the unique bioluminescent petunias and often praise
-              the responsive customer service. Shipping experiences are mixed:
-              some plants arrive healthy, while others may arrive stressed or
-              damaged. The company responds to plant issues with support and
-              possible replacements or refunds. Customers also mention that
-              following the right care instructions, especially providing plenty
-              of sunlight and proper watering, makes a difference to plant
-              health and glow.
-            </p>
-
-            <div className="cr-topic-list">
-              {topics.map((topic) => (
-                <span key={topic}>{topic}</span>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* REVIEW HIGHLIGHTS */}
-      <section className="cr-highlights cr-container">
-        <div className="cr-section-heading">
-          <div>
-            <span className="cr-section-label">03 / WORDS THAT STAY</span>
-            <h2>
-              Review <em>highlights.</em>
-            </h2>
-          </div>
-          <p>A few moments shared by our customers.</p>
+          <span>Average sample rating</span>
         </div>
 
-        <div className="cr-highlight-grid">
-          {highlights.map((item, index) => (
-            <article className="cr-highlight-card" key={item.label}>
-              <span className="cr-highlight-number">
-                0{index + 1} / {item.label}
+        <div className="cr-rating-breakdown">
+          {[5, 4, 3, 2, 1].map((rating) => (
+            <div className="cr-rating-row" key={rating}>
+              <span>
+                {rating}
+                <Star size={12} fill="currentColor" />
               </span>
-              <div className="cr-highlight-stars">
-                <Stars rating={5} size={15} />
+
+              <div className="cr-rating-track">
+                <div
+                  style={{
+                    width: `${(ratingCounts[rating] / TOTAL_REVIEWS) * 100}%`,
+                  }}
+                />
               </div>
-              <h3>“{item.quote}”</h3>
-              <span className="cr-highlight-bottom">
-                CUSTOMER VOICE <ArrowUpRight size={15} />
-              </span>
-            </article>
+
+              <span>{ratingCounts[rating]}</span>
+            </div>
           ))}
         </div>
       </section>
 
-      {/* CUSTOMER REVIEWS LIST */}
-      <section className="cr-review-list-section" id="cr-reviews">
-        <div className="cr-container">
-          <div className="cr-section-heading cr-list-heading">
-            <div>
-              <span className="cr-section-label">04 / THE DETAILS</span>
-              <h2>
-                Stories from <em>the garden.</em>
-              </h2>
-            </div>
-
-            <div className="cr-review-total">
-              <strong>{filteredReviews.length}</strong>
-              <span>displayed reviews</span>
-            </div>
+      {/* CUSTOMER PHOTO GALLERY */}
+      <section className="cr-gallery">
+        <div className="cr-section-heading">
+          <div>
+            <span className="cr-eyebrow">FROM OUR COMMUNITY</span>
+            <h2>Little green moments.</h2>
           </div>
 
-          <div className="cr-filter-bar">
-            <div className="cr-filter-title">
-              <SlidersHorizontal size={17} />
-              FILTERS
-            </div>
+          <span className="cr-gallery-count">
+            <ImageIcon size={15} />
+            CUSTOMER GALLERY
+          </span>
+        </div>
 
-            <div className="cr-filter-controls">
-              <label>
-                Rating
-                <select
-                  value={ratingFilter}
-                  onChange={(event) => changeFilter(event.target.value)}
-                >
-                  <option value="all">All ratings</option>
-                  <option value="5">5 stars</option>
-                  <option value="4">4 stars</option>
-                  <option value="3">3 stars</option>
-                  <option value="2">2 stars</option>
-                  <option value="1">1 star</option>
-                </select>
-              </label>
+        <div className="cr-gallery-grid">
+          {customerImages.map((image, index) => (
+            <button
+              className={`cr-gallery-image cr-gallery-image-${(index % 3) + 1}`}
+              key={image}
+              onClick={() => setSelectedImage(image)}
+              aria-label={`View customer photograph ${index + 1}`}
+            >
+              <img
+                src={image}
+                alt={`Nively plant gallery image ${index + 1}`}
+                loading="lazy"
+              />
 
-              <label>
-                Sort by
-                <select
-                  value={sortBy}
-                  onChange={(event) => changeSort(event.target.value)}
-                >
-                  <option value="recent">Most Recent</option>
-                  <option value="highest">Highest Rating</option>
-                  <option value="lowest">Lowest Rating</option>
-                </select>
-              </label>
-            </div>
+              <span>VIEW IMAGE ↗</span>
+            </button>
+          ))}
+        </div>
+      </section>
+
+      {/* CUSTOMER REVIEWS */}
+      <section className="cr-reviews-section" id="reviews">
+        <div className="cr-section-heading cr-reviews-heading">
+          <div>
+            <span className="cr-eyebrow">CUSTOMER FEEDBACK</span>
+            <h2>What people are saying.</h2>
+            <p>Thoughts and experiences from our community.</p>
           </div>
 
-          <div className="cr-reviews">
-            {currentReviews.length === 0 ? (
-              <div className="cr-empty">
-                <Leaf size={32} />
-                <h3>No reviews found</h3>
-                <p>Try selecting a different rating.</p>
-                <button onClick={() => changeFilter("all")}>
-                  Show all reviews
-                </button>
-              </div>
-            ) : (
-              currentReviews.map((review) => (
-                <article className="cr-review-card" key={review.id}>
-                  <div className="cr-review-user">
-                    <div className="cr-review-avatar">{review.initial}</div>
+          <div className="cr-total-count">
+            <strong>{filteredReviews.length}</strong>
+            <span>REVIEWS</span>
+          </div>
+        </div>
 
-                    <div className="cr-review-user-info">
-                      <h3>{review.name}</h3>
-                      {review.verified && (
-                        <span className="cr-verified">
-                          <BadgeCheck size={13} /> Verified
-                        </span>
-                      )}
-                      <span className="cr-review-date">{review.dateLabel}</span>
-                    </div>
-                  </div>
+        {/* FILTER TOOLBAR */}
+        <div className="cr-toolbar">
+          <div className="cr-filter-label">
+            <SlidersHorizontal size={16} />
+            <span>FILTER BY</span>
+          </div>
 
-                  <div className="cr-review-body">
-                    <Stars rating={review.rating} size={17} />
-                    <h4>{review.title}</h4>
-                    <p>{review.text}</p>
+          <div className="cr-filter-buttons">
+            <button
+              className={selectedRating === "all" ? "active" : ""}
+              onClick={() => {
+                setSelectedRating("all");
+                setCurrentPage(1);
+              }}
+            >
+              All reviews
+            </button>
 
-                    <button
-                      className="cr-more-button"
-                      onClick={() =>
-                        setExpandedReview(
-                          expandedReview === review.id ? null : review.id,
-                        )
-                      }
-                    >
-                      {expandedReview === review.id
-                        ? "Show less"
-                        : "More details"}
-                      <ArrowUpRight size={15} />
-                    </button>
+            {[5, 4].map((rating) => (
+              <button
+                key={rating}
+                className={selectedRating === String(rating) ? "active" : ""}
+                onClick={() => {
+                  setSelectedRating(String(rating));
+                  setCurrentPage(1);
+                }}
+              >
+                {rating}
+                <Star size={12} fill="currentColor" />
+              </button>
+            ))}
+          </div>
 
-                    {expandedReview === review.id && (
-                      <div className="cr-company-reply">
-                        <div className="cr-reply-heading">
-                          <MessageCircle size={17} />
-                          <strong>Reply from Light Bio</strong>
-                        </div>
-                        <p>{review.reply}</p>
-                      </div>
+          <label className="cr-sort">
+            <span>SORT BY</span>
+
+            <select
+              value={sortBy}
+              onChange={(event) => {
+                setSortBy(event.target.value);
+                setCurrentPage(1);
+              }}
+            >
+              <option value="newest">Newest first</option>
+              <option value="highest">Highest rated</option>
+              <option value="lowest">Lowest rated</option>
+            </select>
+          </label>
+        </div>
+
+        {/* SHOWING REVIEWS */}
+        <div className="cr-showing">
+          SHOWING{" "}
+          {filteredReviews.length === 0 ? "0" : `${startIndex + 1}–${endIndex}`}{" "}
+          OF {filteredReviews.length} REVIEWS
+        </div>
+
+        {/* REVIEW CARDS */}
+        <div className="cr-review-grid">
+          {visibleReviews.map((review) => (
+            <article className="cr-review-card" key={review.id}>
+              <div className="cr-review-top">
+                <div className="cr-reviewer">
+                  <div className="cr-avatar">{review.initials}</div>
+
+                  <div>
+                    <h3>{review.name}</h3>
+
+                    {review.verified && (
+                      <span className="cr-verified">✓ VERIFIED CUSTOMER</span>
                     )}
                   </div>
-                </article>
-              ))
-            )}
-          </div>
+                </div>
 
-          {/* PAGINATION */}
-          {filteredReviews.length > reviewsPerPage && (
-            <div className="cr-pagination">
-              <button
-                onClick={() => setPage((current) => Math.max(1, current - 1))}
-                disabled={page === 1}
-                aria-label="Previous page"
-              >
-                <ChevronLeft size={19} />
-              </button>
+                <span className="cr-review-date">{review.date}</span>
+              </div>
 
-              {Array.from({ length: totalPages }, (_, index) => (
+              <Stars rating={review.rating} />
+
+              <h4>{review.title}</h4>
+
+              <p className="cr-review-text">{review.text}</p>
+
+              {/* CUSTOMER PHOTO INSIDE REVIEW */}
+              {review.image && (
                 <button
-                  key={index + 1}
-                  className={page === index + 1 ? "active" : ""}
-                  onClick={() => {
-                    setPage(index + 1);
-                    setExpandedReview(null);
-                  }}
+                  className="cr-review-photo"
+                  onClick={() => setSelectedImage(review.image)}
+                  aria-label="View customer review photograph"
                 >
-                  {index + 1}
+                  <img
+                    src={review.image}
+                    alt="Plant gallery photograph"
+                    loading="lazy"
+                  />
+
+                  <span>VIEW PHOTO ↗</span>
                 </button>
-              ))}
-
-              <button
-                onClick={() =>
-                  setPage((current) => Math.min(totalPages, current + 1))
-                }
-                disabled={page === totalPages}
-                aria-label="Next page"
-              >
-                <ChevronRight size={19} />
-              </button>
-            </div>
-          )}
-
-          <p className="cr-demo-note">
-            This page currently displays the five review examples supplied for
-            the design. Connect your review database to display all customer
-            reviews.
-          </p>
+              )}
+            </article>
+          ))}
         </div>
-      </section>
 
-      {/* CUSTOMER GALLERY */}
-      <section className="cr-gallery-section">
-        <div className="cr-container">
-          <div className="cr-section-heading">
-            <div>
-              <span className="cr-section-label">05 / COMMUNITY MOMENTS</span>
-              <h2>
-                Customers <em>gallery.</em>
-              </h2>
-            </div>
+        {/* EMPTY STATE */}
+        {visibleReviews.length === 0 && (
+          <div className="cr-empty">
+            <h3>No reviews found</h3>
+            <p>Try selecting another rating.</p>
 
             <button
-              className="cr-gallery-toggle"
-              onClick={() => setShowGallery((value) => !value)}
+              onClick={() => {
+                setSelectedRating("all");
+                setCurrentPage(1);
+              }}
             >
-              {showGallery ? "SHOW LESS" : "SHOW MORE"}
-              <ArrowUpRight size={17} />
+              SHOW ALL REVIEWS
             </button>
           </div>
+        )}
 
-          <div className="cr-gallery-grid">
-            {galleryImages
-              .slice(0, showGallery ? galleryImages.length : 4)
-              .map((image, index) => (
-                <div className="cr-gallery-item" key={image}>
-                  <img src={image} alt={`Plant gallery preview ${index + 1}`} />
-                  <span>
-                    <Camera size={14} /> GALLERY PREVIEW
-                  </span>
-                </div>
-              ))}
-          </div>
+        {/* PAGINATION */}
+        <div className="cr-pagination">
+          <button
+            className="cr-page-arrow"
+            onClick={() => goToPage(currentPage - 1)}
+            disabled={currentPage === 1}
+            aria-label="Previous page"
+          >
+            <ChevronLeft size={17} />
+            <span>PREV</span>
+          </button>
 
-          <p className="cr-gallery-note">
-            Demo gallery images — replace these with real customer-submitted
-            review photos before publishing.
-          </p>
-        </div>
-      </section>
-
-      {/* COMMUNITY CTA */}
-      <section className="cr-cta">
-        <div className="cr-container cr-cta-inner">
-          <div>
-            <span className="cr-section-label">YOUR STORY MATTERS</span>
-            <h2>
-              Have a story
-              <br />
-              <em>to share?</em>
-            </h2>
+          <div className="cr-page-numbers">
+            {Array.from({ length: totalPages }, (_, index) => index + 1).map(
+              (page) => (
+                <button
+                  key={page}
+                  className={currentPage === page ? "active" : ""}
+                  onClick={() => goToPage(page)}
+                  aria-label={`Go to page ${page}`}
+                  aria-current={currentPage === page ? "page" : undefined}
+                >
+                  {page}
+                </button>
+              ),
+            )}
           </div>
 
           <button
-            className="cr-cta-button"
-            onClick={() => {
-              setShowReviewForm(true);
-              setSubmitted(false);
-            }}
+            className="cr-page-arrow"
+            onClick={() => goToPage(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            aria-label="Next page"
           >
-            Write your review <ArrowUpRight size={19} />
+            <span>NEXT</span>
+            <ChevronRight size={17} />
           </button>
+        </div>
+
+        <div className="cr-page-status">
+          PAGE {currentPage} OF {totalPages}
         </div>
       </section>
 
-      {/* WRITE REVIEW MODAL */}
-      {showReviewForm && (
+      {/* IMAGE LIGHTBOX */}
+      {selectedImage && (
         <div
-          className="cr-modal-overlay"
-          onClick={() => setShowReviewForm(false)}
+          className="cr-lightbox"
+          onClick={() => setSelectedImage(null)}
+          role="presentation"
         >
-          <div
-            className="cr-review-modal"
-            onClick={(event) => event.stopPropagation()}
+          <button
+            className="cr-lightbox-close"
+            onClick={() => setSelectedImage(null)}
+            aria-label="Close image"
           >
-            <button
-              className="cr-modal-close"
-              onClick={() => setShowReviewForm(false)}
-              aria-label="Close review form"
-            >
-              <X size={21} />
-            </button>
+            <X size={25} />
+          </button>
 
-            {!submitted ? (
-              <>
-                <span className="cr-section-label">SHARE YOUR EXPERIENCE</span>
-                <h2>
-                  Write a <em>review.</em>
-                </h2>
-
-                <form onSubmit={handleReviewSubmit}>
-                  <label>
-                    Your name
-                    <input type="text" placeholder="Enter your name" required />
-                  </label>
-
-                  <label>
-                    Your email
-                    <input
-                      type="email"
-                      placeholder="Enter your email"
-                      required
-                    />
-                  </label>
-
-                  <label>
-                    Your rating
-                    <select required defaultValue="5">
-                      <option value="5">★★★★★ — Excellent</option>
-                      <option value="4">★★★★ — Very good</option>
-                      <option value="3">★★★ — Good</option>
-                      <option value="2">★★ — Fair</option>
-                      <option value="1">★ — Poor</option>
-                    </select>
-                  </label>
-
-                  <label>
-                    Your experience
-                    <textarea
-                      placeholder="Tell us about your experience..."
-                      rows="4"
-                      required
-                    />
-                  </label>
-
-                  <button className="cr-submit-review" type="submit">
-                    Submit review <ArrowUpRight size={17} />
-                  </button>
-                </form>
-
-                <p className="cr-form-note">
-                  This is a front-end demo form. Connect a backend or review
-                  service to receive and publish submissions.
-                </p>
-              </>
-            ) : (
-              <div className="cr-form-success">
-                <Sparkles size={35} />
-                <h2>Thank you!</h2>
-                <p>
-                  Your form preview is complete. No review has been sent or
-                  saved because a review service is not connected yet.
-                </p>
-                <button onClick={() => setShowReviewForm(false)}>Close</button>
-              </div>
-            )}
-          </div>
+          <img
+            src={selectedImage}
+            alt="Expanded plant photograph"
+            onClick={(event) => event.stopPropagation()}
+          />
         </div>
       )}
     </main>

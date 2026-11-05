@@ -1,6 +1,5 @@
 import { Link } from "react-router-dom";
 import { Leaf, MapPin, ArrowUpRight } from "lucide-react";
-
 import "../Style/Footer.css";
 
 export default function Footer() {
@@ -76,10 +75,10 @@ export default function Footer() {
             <div className="footer__socials">
               {/* INSTAGRAM */}
               <a
-                href="https://instagram.com"
+                href="https://www.instagram.com/light.bio?dlrf=a25vMjN2aHltZzE4"
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label="Instagram"
+                aria-label="Visit Light.bio on Instagram"
               >
                 <svg
                   viewBox="0 0 24 24"
@@ -106,10 +105,10 @@ export default function Footer() {
 
               {/* FACEBOOK */}
               <a
-                href="https://facebook.com"
+                href="https://www.facebook.com/share/1BKmFCkZH3/"
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label="Facebook"
+                aria-label="Visit Light.bio on Facebook"
               >
                 <svg
                   viewBox="0 0 24 24"
@@ -124,7 +123,7 @@ export default function Footer() {
 
               {/* YOUTUBE */}
               <a
-                href="https://youtube.com"
+                href="https://www.youtube.com/"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="YouTube"
@@ -194,7 +193,15 @@ export default function Footer() {
         {/* BOTTOM BAR */}
         <div className="footer__divider"></div>
 
-       
+        <div className="footer__bottom">
+          <p>© {new Date().getFullYear()} lights.bio. All rights reserved.</p>
+
+          <div className="footer__legal-links">
+            <Link to="/terms-and-conditions">Terms & Conditions</Link>
+
+            <Link to="/privacy-policy">Privacy Policy</Link>
+          </div>
+        </div>
       </div>
     </footer>
   );
