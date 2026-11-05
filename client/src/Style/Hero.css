@@ -1,5 +1,9 @@
 @import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;1,500&display=swap");
 
+/* =========================================
+   GLOBAL
+========================================= */
+
 * {
      box-sizing: border-box;
 }
@@ -18,21 +22,30 @@ body {
      background: #07120c;
 }
 
+/* =========================================
+   MAIN HERO
+========================================= */
+
 .hero {
      --split: 50%;
 
      position: relative;
      width: 100%;
-     height: calc(100svh - 83px);
-     min-height: 480px;
+     height: 100svh;
+     min-height: 600px;
+
      overflow: hidden;
      isolation: isolate;
+
      background: #07170e;
      color: #fffdf5;
+
      font-family: "DM Sans", sans-serif;
 }
 
-/* BACKGROUND LAYERS */
+/* =========================================
+   BACKGROUND LAYERS
+========================================= */
 
 .hero-day,
 .hero-night {
@@ -47,54 +60,75 @@ body {
 
 .hero-night {
      z-index: 2;
+
      clip-path: inset(0 0 0 var(--split));
+
      transition: clip-path 1.1s cubic-bezier(.76, 0, .24, 1);
 }
 
 .hero-background {
      position: absolute;
      inset: 0;
+
      width: 100%;
      height: 100%;
+
      object-fit: cover;
      object-position: center;
+
      animation: gardenZoom 22s ease-in-out infinite alternate;
+
+     will-change: transform;
 }
 
-/* MOONLIGHT PNG - NIGHT ONLY */
+/* =========================================
+   MOONLIGHT OVERLAY
+========================================= */
 
 .moonlight-overlay {
      position: absolute;
      z-index: 2;
      inset: 0;
+
      width: 100%;
      height: 100%;
+
      object-fit: cover;
      object-position: center;
+
      pointer-events: none;
+
      opacity: .8;
      mix-blend-mode: screen;
 }
 
-/* DAY LIGHT EFFECT */
+/* =========================================
+   DAY LIGHT
+========================================= */
 
 .day-light-glow {
      position: absolute;
      inset: 0;
+
      pointer-events: none;
+
      background:
           radial-gradient(circle at 10% 10%,
                rgba(255, 222, 145, .22),
                transparent 45%);
 }
 
-/* NIGHT LIGHT EFFECT */
+/* =========================================
+   NIGHT LIGHT
+========================================= */
 
 .night-light-glow {
      position: absolute;
      z-index: 3;
      inset: 0;
+
      pointer-events: none;
+
      background:
           linear-gradient(120deg,
                rgba(3, 15, 29, .12),
@@ -104,34 +138,44 @@ body {
                transparent 40%);
 }
 
-/* OVERLAY */
+/* =========================================
+   IMAGE OVERLAY
+========================================= */
 
 .hero-shade {
      position: absolute;
      z-index: 4;
      inset: 0;
+
      pointer-events: none;
+
      background:
           linear-gradient(90deg,
                rgba(4, 17, 11, .64),
                rgba(4, 17, 11, .32) 40%,
                transparent 80%),
           linear-gradient(0deg,
-               rgba(3, 15, 9, .38),
+               rgba(3, 15, 9, .48),
                transparent 35%,
                rgba(3, 15, 9, .08));
 }
 
-/* HERO TEXT */
+/* =========================================
+   HERO TEXT
+========================================= */
 
 .hero-copy {
      position: absolute;
      z-index: 15;
+
      top: 46%;
      left: 10.5%;
+
      transform: translateY(-43%);
+
      width: 450px;
      max-width: 43%;
+
      pointer-events: none;
 }
 
@@ -139,8 +183,11 @@ body {
      display: flex;
      align-items: center;
      gap: 10px;
+
      margin-bottom: 17px;
+
      color: #e5d3a5;
+
      font-size: 8px;
      font-weight: 700;
      letter-spacing: 2.6px;
@@ -154,10 +201,14 @@ body {
 
 .hero-title {
      margin: 0;
+
      color: #fffdf5;
+
      font-family: "Playfair Display", serif;
+
      font-size: clamp(43px, 4.3vw, 64px);
      font-weight: 500;
+
      letter-spacing: -2px;
      line-height: 1.02;
 }
@@ -169,29 +220,43 @@ body {
 
 .hero-description {
      margin: 17px 0 20px;
-     color: rgba(255, 255, 255, .86);
+
+     color: rgba(255, 255, 255, .9);
+
      font-size: 11px;
      line-height: 1.8;
 }
+
+/* =========================================
+   HERO BUTTONS
+========================================= */
 
 .hero-actions {
      display: flex;
      align-items: center;
      gap: 19px;
+
      pointer-events: auto;
 }
 
 .hero-primary-btn {
      display: inline-flex;
      align-items: center;
+     justify-content: center;
      gap: 13px;
+
      padding: 12px 16px;
+
      border-radius: 3px;
+
      background: #e7d5a6;
      color: #203c2a;
+
      text-decoration: none;
+
      font-size: 10px;
      font-weight: 700;
+
      transition: .35s ease;
 }
 
@@ -202,39 +267,63 @@ body {
 
 .hero-secondary-btn {
      padding-bottom: 5px;
+
      color: #fff;
+
      border-bottom: 1px solid rgba(255, 255, 255, .6);
+
      text-decoration: none;
      font-size: 10px;
+
+     transition: .3s ease;
 }
 
-/* SIDE LABELS */
+.hero-secondary-btn:hover {
+     color: #e5d3a5;
+     border-color: #e5d3a5;
+}
+
+/* =========================================
+   SIDE LABELS
+========================================= */
 
 .hero-side-label {
      position: absolute;
      z-index: 8;
-     bottom: 12%;
+
+     bottom: 13%;
+
      display: flex;
      flex-direction: column;
-     gap: 5px;
+     gap: 7px;
+
      pointer-events: none;
+
      transition: opacity .5s ease;
 }
 
 .hero-side-label svg {
+     width: 17px;
+     height: 17px;
+
+     margin-bottom: 3px;
+
      color: #e5d3a5;
 }
 
 .hero-side-label span {
-     font-size: 8px;
+     color: rgba(255, 255, 255, .95);
+
+     font-size: 9px;
      font-weight: 700;
      letter-spacing: 2px;
 }
 
 .hero-side-label small {
      color: rgba(255, 255, 255, .7);
-     font-size: 7px;
-     letter-spacing: 1px;
+
+     font-size: 8px;
+     letter-spacing: 1.2px;
 }
 
 .hero-day-label {
@@ -243,24 +332,33 @@ body {
 
 .hero-night-label {
      right: 7%;
+
      align-items: flex-end;
      text-align: right;
 }
 
-/* BOTTOM TEXT */
+/* =========================================
+   BOTTOM INFORMATION
+========================================= */
 
 .hero-bottom {
      position: absolute;
      z-index: 15;
+
      left: 7%;
      right: 7%;
-     bottom: 17px;
+     bottom: 25px;
+
      display: flex;
      justify-content: space-between;
      align-items: center;
-     color: rgba(255, 255, 255, .72);
-     font-size: 7px;
-     letter-spacing: 1.4px;
+
+     color: rgba(255, 255, 255, .85);
+
+     font-size: 8px;
+     font-weight: 600;
+     letter-spacing: 1.5px;
+
      pointer-events: none;
 }
 
@@ -268,45 +366,68 @@ body {
 .hero-bottom-right {
      display: flex;
      align-items: center;
-     gap: 9px;
+     gap: 10px;
+}
+
+.hero-bottom-right svg {
+     color: #a7d8a0;
 }
 
 .hero-scroll-line {
-     width: 25px;
+     width: 28px;
      height: 1px;
+
      background: #e5d3a5;
 }
 
-/* DAY NIGHT BUTTON */
+/* =========================================
+   DAY / NIGHT SWITCH
+========================================= */
 
 .hero-switch {
      position: absolute;
      z-index: 18;
-     bottom: 45px;
+
+     bottom: 58px;
      left: 50%;
+
      transform: translateX(-50%);
+
      display: flex;
      gap: 3px;
-     padding: 4px;
+
+     padding: 5px;
+
      border: 1px solid rgba(255, 255, 255, .28);
      border-radius: 40px;
-     background: rgba(8, 25, 17, .82);
+
+     background: rgba(8, 25, 17, .85);
+
      backdrop-filter: blur(18px);
+     -webkit-backdrop-filter: blur(18px);
+
+     box-shadow: 0 8px 30px rgba(0, 0, 0, .18);
 }
 
 .hero-switch button {
      display: flex;
      align-items: center;
      justify-content: center;
-     gap: 6px;
-     padding: 9px 17px;
+     gap: 7px;
+
+     padding: 10px 19px;
+
      border: 0;
      border-radius: 30px;
+
      background: transparent;
-     color: rgba(255, 255, 255, .8);
+     color: rgba(255, 255, 255, .85);
+
      font-family: inherit;
-     font-size: 9px;
+     font-size: 10px;
+
      cursor: pointer;
+
      transition: .35s ease;
 }
 
@@ -315,23 +436,39 @@ body {
      color: #203c2a;
 }
 
-/* DIVIDER */
+.hero-switch button:hover {
+     color: #e7d5a6;
+}
+
+.hero-switch button.active:hover {
+     color: #203c2a;
+}
+
+/* =========================================
+   DIVIDER
+========================================= */
 
 .hero-divider {
      position: absolute;
      z-index: 12;
+
      top: 0;
      bottom: 0;
      left: var(--split);
+
      transform: translateX(-50%);
+
      pointer-events: none;
+
      transition: left 1.1s cubic-bezier(.76, 0, .24, 1);
 }
 
 .divider-line {
      width: 1px;
      height: 100%;
-     background: linear-gradient(to bottom,
+
+     background:
+          linear-gradient(to bottom,
                transparent,
                rgba(255, 255, 255, .8) 12%,
                #ead9a9 50%,
@@ -346,40 +483,56 @@ body {
 
 .divider-handle {
      position: absolute;
+
      top: 50%;
      left: 50%;
+
      display: flex;
      align-items: center;
      justify-content: center;
-     width: 43px;
-     height: 43px;
+
+     width: 45px;
+     height: 45px;
+
      transform: translate(-50%, -50%);
+
      border: 1px solid rgba(255, 255, 255, .9);
      border-radius: 50%;
+
      background: #ead9a9;
      color: #203c2a;
+
      box-shadow:
           0 0 12px rgba(255, 255, 255, .5),
           0 0 28px rgba(230, 213, 161, .6);
+
      animation: handleGlow 2.5s ease-in-out infinite;
 }
 
-/* DRAG CONTROL */
+/* =========================================
+   DRAG CONTROL
+========================================= */
 
 .hero-range {
      position: absolute;
      z-index: 14;
+
      top: 0;
      left: 0;
+
      width: 100%;
      height: 100%;
+
      margin: 0;
      opacity: 0;
+
      cursor: ew-resize;
      pointer-events: auto;
 }
 
-/* ANIMATIONS */
+/* =========================================
+   ANIMATIONS
+========================================= */
 
 @keyframes gardenZoom {
      from {
@@ -407,7 +560,28 @@ body {
      }
 }
 
-/* TABLET */
+/* =========================================
+   LARGE DESKTOP
+========================================= */
+
+@media (min-width: 1600px) {
+     .hero-copy {
+          left: 10.5%;
+          width: 500px;
+     }
+
+     .hero-title {
+          font-size: clamp(64px, 4.3vw, 76px);
+     }
+
+     .hero-description {
+          font-size: 12px;
+     }
+}
+
+/* =========================================
+   TABLET
+========================================= */
 
 @media (max-width: 1100px) {
      .hero-copy {
@@ -418,13 +592,20 @@ body {
      .hero-title {
           font-size: clamp(40px, 5vw, 57px);
      }
+
+     .hero-side-label {
+          bottom: 14%;
+     }
 }
 
-/* MOBILE */
+/* =========================================
+   MOBILE
+========================================= */
 
 @media (max-width: 768px) {
+
      .hero {
-          height: calc(100svh - 70px);
+          height: 100svh;
           min-height: 480px;
      }
 
@@ -432,8 +613,10 @@ body {
           top: 43%;
           left: 7%;
           right: 7%;
+
           width: auto;
           max-width: none;
+
           transform: translateY(-35%);
      }
 
@@ -465,13 +648,34 @@ body {
           bottom: 15%;
      }
 
+     .hero-side-label span {
+          font-size: 8px;
+     }
+
+     .hero-side-label small {
+          font-size: 7px;
+     }
+
      .hero-switch {
-          bottom: 42px;
+          bottom: 48px;
+     }
+
+     .hero-switch button {
+          padding: 9px 15px;
+          font-size: 9px;
      }
 
      .hero-bottom {
-          bottom: 12px;
+          left: 6%;
+          right: 6%;
+          bottom: 15px;
+
           font-size: 6px;
+          letter-spacing: 1px;
+     }
+
+     .hero-scroll-line {
+          width: 19px;
      }
 
      .hero-divider,
@@ -480,7 +684,57 @@ body {
      }
 }
 
+/* =========================================
+   SMALL MOBILE
+========================================= */
+
+@media (max-width: 480px) {
+
+     .hero {
+          min-height: 480px;
+     }
+
+     .hero-copy {
+          top: 42%;
+     }
+
+     .hero-title {
+          font-size: clamp(35px, 9vw, 44px);
+     }
+
+     .hero-description {
+          font-size: 9px;
+     }
+
+     .hero-actions {
+          gap: 13px;
+     }
+
+     .hero-primary-btn {
+          gap: 8px;
+          padding: 11px 12px;
+     }
+
+     .hero-side-label {
+          bottom: 15%;
+     }
+
+     .hero-switch {
+          bottom: 45px;
+     }
+
+     .hero-bottom {
+          font-size: 6px;
+          letter-spacing: .8px;
+     }
+}
+
+/* =========================================
+   EXTRA SMALL MOBILE
+========================================= */
+
 @media (max-width: 380px) {
+
      .hero-title {
           font-size: 35px;
      }
@@ -488,7 +742,16 @@ body {
      .hero-description {
           font-size: 9px;
      }
+
+     .hero-bottom {
+          left: 5%;
+          right: 5%;
+     }
 }
+
+/* =========================================
+   REDUCED MOTION
+========================================= */
 
 @media (prefers-reduced-motion: reduce) {
 

@@ -1,0 +1,966 @@
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap");
+
+/* ======================================
+   GLOBAL
+====================================== */
+
+.unboxing-page,
+.unbox-page {
+     --ub-dark: #101810;
+     --ub-cream: #f0f0e7;
+     --ub-lime: #d6ff75;
+     --ub-muted: #858b7e;
+     --ub-green: #617d4d;
+     --ub-line: rgba(16, 24, 16, 0.15);
+
+     width: 100%;
+     overflow: hidden;
+     background: var(--ub-cream);
+     color: var(--ub-dark);
+     font-family: "DM Sans", sans-serif;
+}
+
+.unboxing-page *,
+.unbox-page * {
+     box-sizing: border-box;
+}
+
+/* ======================================
+   HERO
+====================================== */
+
+.unbox-hero {
+     position: relative;
+     min-height: 720px;
+     padding: 160px 8% 90px;
+     display: flex;
+     align-items: center;
+     justify-content: center;
+     overflow: hidden;
+     isolation: isolate;
+     background: var(--ub-dark);
+     color: #f3f1e8;
+}
+
+.unbox-hero::before {
+     content: "";
+     position: absolute;
+     inset: 0;
+     z-index: -1;
+     background:
+          radial-gradient(circle at 15% 25%, rgba(104, 139, 70, .2), transparent 36%),
+          radial-gradient(circle at 85% 75%, rgba(214, 255, 117, .12), transparent 38%);
+}
+
+.unbox-hero::after {
+     content: "";
+     position: absolute;
+     inset: 20px;
+     border: 1px solid rgba(214, 255, 117, .08);
+     pointer-events: none;
+}
+
+.unbox-hero__content {
+     position: relative;
+     z-index: 3;
+     width: 100%;
+     max-width: 1000px;
+     text-align: center;
+}
+
+.unbox-hero__eyebrow {
+     display: flex;
+     align-items: center;
+     justify-content: center;
+     gap: 10px;
+     margin-bottom: 30px;
+     color: var(--ub-lime);
+     font-size: 10px;
+     font-weight: 700;
+     letter-spacing: 3px;
+}
+
+.unbox-hero__title {
+     margin: 0;
+     font-family: "Playfair Display", serif;
+     font-size: clamp(65px, 9.5vw, 130px);
+     font-weight: 400;
+     line-height: .96;
+     letter-spacing: -5px;
+}
+
+.unbox-hero__title span {
+     display: block;
+}
+
+.unbox-hero__title--italic {
+     color: var(--ub-lime);
+     font-style: italic;
+}
+
+.unbox-hero__description {
+     max-width: 560px;
+     margin: 30px auto 0;
+     color: rgba(243, 241, 232, .65);
+     font-size: 14px;
+     line-height: 1.9;
+}
+
+.unbox-hero__link {
+     display: inline-flex;
+     align-items: center;
+     gap: 14px;
+     margin-top: 35px;
+     color: var(--ub-lime);
+     font-size: 10px;
+     font-weight: 700;
+     letter-spacing: 1.5px;
+     text-decoration: none;
+     transition: gap .3s ease;
+}
+
+.unbox-hero__link:hover {
+     gap: 22px;
+}
+
+.unbox-hero__plant {
+     position: absolute;
+     right: 5%;
+     top: 9%;
+     width: min(30vw, 360px);
+     z-index: 1;
+     opacity: .5;
+     pointer-events: none;
+}
+
+.unbox-hero__vertical {
+     position: absolute;
+     right: 25px;
+     top: 50%;
+     color: rgba(255, 255, 255, .35);
+     font-size: 8px;
+     font-weight: 700;
+     letter-spacing: 3px;
+     writing-mode: vertical-rl;
+     transform: translateY(-50%);
+}
+
+.unbox-hero__bottom {
+     position: absolute;
+     right: 8%;
+     bottom: 28px;
+     left: 8%;
+     z-index: 3;
+     display: flex;
+     justify-content: space-between;
+     color: rgba(255, 255, 255, .4);
+     font-size: 9px;
+     font-weight: 700;
+     letter-spacing: 1.8px;
+}
+
+/* ======================================
+   BOTANICAL SVG
+====================================== */
+
+.unbox-plant {
+     display: block;
+     width: 100%;
+     height: auto;
+     overflow: visible;
+}
+
+.unbox-plant__stem {
+     fill: none;
+     stroke-linecap: round;
+}
+
+.unbox-plant__leaf {
+     transform-box: fill-box;
+     transform-origin: center bottom;
+     will-change: transform, opacity;
+}
+
+/* ======================================
+   INTRO
+====================================== */
+
+.unbox-intro {
+     max-width: 850px;
+     margin: 0 auto;
+     padding: 115px 25px 85px;
+     text-align: center;
+}
+
+.unbox-label {
+     display: inline-block;
+     color: #61734f;
+     font-size: 9px;
+     font-weight: 800;
+     letter-spacing: 2.5px;
+}
+
+.unbox-intro h2 {
+     margin: 20px 0;
+     font-family: "Playfair Display", serif;
+     font-size: clamp(43px, 6vw, 75px);
+     font-weight: 400;
+     line-height: 1.08;
+     letter-spacing: -2px;
+}
+
+.unbox-intro h2 em {
+     color: var(--ub-green);
+     font-weight: 400;
+}
+
+.unbox-intro p {
+     max-width: 530px;
+     margin: 0 auto;
+     color: var(--ub-muted);
+     font-size: 13px;
+     line-height: 1.9;
+}
+
+/* ======================================
+   SECTION HEADINGS
+====================================== */
+
+.unbox-section-heading {
+     max-width: 1350px;
+     margin: 0 auto 60px;
+     display: flex;
+     align-items: flex-end;
+     justify-content: space-between;
+     gap: 25px;
+}
+
+.unbox-section-heading h2 {
+     margin: 16px 0 0;
+     font-family: "Playfair Display", serif;
+     font-size: clamp(40px, 5.5vw, 68px);
+     font-weight: 400;
+     line-height: 1.05;
+     letter-spacing: -2px;
+}
+
+.unbox-section-heading__count {
+     padding-bottom: 8px;
+     color: #818778;
+     font-size: 9px;
+     font-weight: 700;
+     letter-spacing: 1.5px;
+     white-space: nowrap;
+}
+
+/* ======================================
+   SIX STEPS
+====================================== */
+
+.unbox-steps {
+     position: relative;
+     padding: 110px 7%;
+     background: var(--ub-cream);
+}
+
+.unbox-steps__grid {
+     max-width: 1350px;
+     margin: 0 auto;
+     display: grid;
+     grid-template-columns: repeat(3, minmax(0, 1fr));
+     border-top: 1px solid var(--ub-line);
+     border-left: 1px solid var(--ub-line);
+}
+
+.unbox-step {
+     position: relative;
+     min-height: 260px;
+     padding: 30px;
+     display: flex;
+     flex-direction: column;
+     border-right: 1px solid var(--ub-line);
+     border-bottom: 1px solid var(--ub-line);
+     transition: background .4s ease;
+}
+
+.unbox-step:hover {
+     background: #e6e9dc;
+}
+
+.unbox-step__number {
+     color: #82936d;
+     font-size: 11px;
+     font-weight: 800;
+     letter-spacing: 1px;
+}
+
+.unbox-step__icon {
+     width: 42px;
+     height: 42px;
+     margin-top: 23px;
+     display: grid;
+     place-items: center;
+     border: 1px solid rgba(97, 125, 77, .3);
+     border-radius: 50%;
+     color: #617d4d;
+     transition: background .35s ease, color .35s ease, transform .35s ease;
+}
+
+.unbox-step:hover .unbox-step__icon {
+     background: var(--ub-dark);
+     color: var(--ub-lime);
+     transform: rotate(-15deg);
+}
+
+.unbox-step h3 {
+     margin: 24px 0 10px;
+     font-family: "Playfair Display", serif;
+     font-size: 27px;
+     font-weight: 500;
+}
+
+.unbox-step p {
+     max-width: 340px;
+     margin: 0;
+     color: #777e72;
+     font-size: 12px;
+     line-height: 1.9;
+}
+
+.unbox-step__line {
+     width: 35px;
+     height: 2px;
+     margin-top: auto;
+     background: #8b9c70;
+     transition: width .4s ease;
+}
+
+.unbox-step:hover .unbox-step__line {
+     width: 75px;
+}
+
+/* ======================================
+   CINEMATIC VIDEO SECTION
+====================================== */
+
+.unbox-video {
+     position: relative;
+     padding: 125px 0 120px;
+     overflow: hidden;
+     isolation: isolate;
+     background:
+          radial-gradient(ellipse at 50% 45%, rgba(94, 119, 68, .28), transparent 55%),
+          #172319;
+     color: #f3f1e8;
+}
+
+/* Subtle background texture */
+
+.unbox-video::before {
+     content: "";
+     position: absolute;
+     inset: 0;
+     z-index: -1;
+     opacity: .22;
+     background-image:
+          linear-gradient(rgba(255, 255, 255, .035) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255, 255, 255, .035) 1px, transparent 1px);
+     background-size: 75px 75px;
+     mask-image: linear-gradient(to bottom, transparent, black 25%, black 75%, transparent);
+}
+
+/* Video heading */
+
+.unbox-video__heading {
+     position: relative;
+     z-index: 2;
+     max-width: 850px;
+     margin: 0 auto 65px;
+     padding: 0 20px;
+     text-align: center;
+}
+
+.unbox-video__heading .unbox-label {
+     color: var(--ub-lime);
+}
+
+.unbox-video__heading h2 {
+     margin: 20px 0 15px;
+     font-family: "Playfair Display", serif;
+     font-size: clamp(48px, 7vw, 88px);
+     font-weight: 400;
+     line-height: 1.02;
+     letter-spacing: -3px;
+}
+
+.unbox-video__heading h2 em {
+     color: var(--ub-lime);
+     font-weight: 400;
+}
+
+.unbox-video__heading p {
+     max-width: 490px;
+     margin: 0 auto;
+     color: rgba(255, 255, 255, .55);
+     font-size: 13px;
+     line-height: 1.9;
+}
+
+/* Video frame */
+
+.unbox-video__frame {
+     position: relative;
+     z-index: 2;
+     width: 82%;
+     max-width: 1280px;
+     aspect-ratio: 16 / 9;
+     margin: 0 auto;
+     overflow: hidden;
+     isolation: isolate;
+     border: 1px solid rgba(214, 255, 117, .25);
+     border-radius: 28px;
+     background: #080e09;
+     box-shadow:
+          0 40px 100px rgba(0, 0, 0, .4),
+          0 0 80px rgba(145, 181, 100, .1);
+     transform-origin: center center;
+     will-change: transform, border-radius;
+}
+
+/* Video iframe */
+
+.unbox-video__frame iframe {
+     position: absolute;
+     inset: 0;
+     z-index: 1;
+     width: 100%;
+     height: 100%;
+     display: block;
+     border: 0;
+     background: #080e09;
+}
+
+/* Video overlay */
+
+.unbox-video__overlay {
+     position: absolute;
+     inset: 0;
+     z-index: 2;
+     display: flex;
+     flex-direction: column;
+     align-items: center;
+     justify-content: center;
+     gap: 20px;
+     background: linear-gradient(180deg,
+               rgba(8, 16, 9, .08),
+               rgba(8, 16, 9, .25) 45%,
+               rgba(8, 16, 9, .72));
+     pointer-events: none;
+     transition: opacity .4s ease;
+}
+
+.unbox-video__play {
+     width: 78px;
+     height: 78px;
+     display: grid;
+     place-items: center;
+     padding-left: 5px;
+     border: 1px solid rgba(214, 255, 117, .8);
+     border-radius: 50%;
+     background: rgba(214, 255, 117, .95);
+     color: var(--ub-dark);
+     box-shadow: 0 0 0 12px rgba(214, 255, 117, .12);
+     transition: transform .4s ease, box-shadow .4s ease;
+}
+
+.unbox-video__frame:hover .unbox-video__play {
+     transform: scale(1.12);
+     box-shadow: 0 0 0 20px rgba(214, 255, 117, .1);
+}
+
+.unbox-video__overlay span {
+     color: white;
+     font-size: 9px;
+     font-weight: 700;
+     letter-spacing: 3px;
+     text-align: center;
+}
+
+/* Video caption */
+
+.unbox-video__caption {
+     max-width: 1280px;
+     width: 82%;
+     margin: 25px auto 0;
+     color: rgba(255, 255, 255, .48);
+     font-size: 10px;
+     font-weight: 600;
+     letter-spacing: 1.5px;
+     text-align: right;
+}
+
+/* Small decorative video labels */
+
+.unbox-video__frame::before {
+     content: "BOTANICAL FILM / 001";
+     position: absolute;
+     top: 20px;
+     left: 22px;
+     z-index: 4;
+     padding: 9px 12px;
+     border: 1px solid rgba(255, 255, 255, .25);
+     background: rgba(8, 16, 9, .45);
+     color: white;
+     font-size: 8px;
+     font-weight: 700;
+     letter-spacing: 1.8px;
+     pointer-events: none;
+}
+
+.unbox-video__frame::after {
+     content: "GROW WITH US";
+     position: absolute;
+     right: 22px;
+     bottom: 20px;
+     z-index: 4;
+     color: rgba(255, 255, 255, .75);
+     font-size: 8px;
+     font-weight: 700;
+     letter-spacing: 2px;
+     pointer-events: none;
+}
+
+/* ======================================
+   GUIDE CARDS
+====================================== */
+
+.unbox-guides {
+     padding: 120px 7%;
+     background: var(--ub-cream);
+}
+
+.unbox-guides__grid {
+     max-width: 1350px;
+     margin: 0 auto;
+     display: grid;
+     grid-template-columns: repeat(3, minmax(0, 1fr));
+     gap: 22px;
+}
+
+.unbox-guide {
+     min-width: 0;
+     overflow: hidden;
+     background: #e5e8dc;
+     transition: transform .45s ease, box-shadow .45s ease;
+}
+
+.unbox-guide:hover {
+     transform: translateY(-8px);
+     box-shadow: 0 25px 50px rgba(16, 24, 16, .1);
+}
+
+.unbox-guide__image {
+     position: relative;
+     aspect-ratio: 1.13 / 1;
+     overflow: hidden;
+     background: #dce2d2;
+}
+
+.unbox-guide__image img {
+     width: 100%;
+     height: 100%;
+     display: block;
+     object-fit: cover;
+     transition: transform .8s cubic-bezier(.2, .7, .2, 1);
+}
+
+.unbox-guide:hover .unbox-guide__image img {
+     transform: scale(1.07);
+}
+
+.unbox-guide__number {
+     position: absolute;
+     top: 16px;
+     left: 16px;
+     padding: 9px 12px;
+     background: var(--ub-cream);
+     color: var(--ub-dark);
+     font-size: 9px;
+     font-weight: 800;
+}
+
+.unbox-guide__content {
+     padding: 27px 24px 25px;
+}
+
+.unbox-guide__content .unbox-label {
+     color: #61734f;
+}
+
+.unbox-guide__content h3 {
+     min-height: 60px;
+     margin: 16px 0 10px;
+     font-family: "Playfair Display", serif;
+     font-size: 25px;
+     font-weight: 500;
+     line-height: 1.2;
+}
+
+.unbox-guide__content p {
+     min-height: 70px;
+     margin: 0 0 23px;
+     color: #777e72;
+     font-size: 12px;
+     line-height: 1.8;
+}
+
+.unbox-guide__button {
+     min-height: 49px;
+     padding: 0 16px;
+     display: flex;
+     align-items: center;
+     justify-content: space-between;
+     gap: 12px;
+     border: 1px solid var(--ub-dark);
+     background: var(--ub-dark);
+     color: white;
+     font-size: 10px;
+     font-weight: 700;
+     letter-spacing: .5px;
+     text-decoration: none;
+     transition: background .3s ease, color .3s ease;
+}
+
+.unbox-guide__button:hover {
+     background: var(--ub-lime);
+     color: var(--ub-dark);
+}
+
+/* ======================================
+   FINAL CTA
+====================================== */
+
+.unbox-cta {
+     position: relative;
+     padding: 120px 20px;
+     overflow: hidden;
+     background: var(--ub-dark);
+     color: #f3f1e8;
+     text-align: center;
+}
+
+.unbox-cta::before {
+     content: "";
+     position: absolute;
+     top: 50%;
+     left: 50%;
+     width: 550px;
+     height: 550px;
+     border: 1px solid rgba(214, 255, 117, .1);
+     border-radius: 50%;
+     transform: translate(-50%, -50%);
+     box-shadow:
+          0 0 0 55px rgba(214, 255, 117, .025),
+          0 0 0 110px rgba(214, 255, 117, .02);
+}
+
+.unbox-cta .unbox-label {
+     color: var(--ub-lime);
+}
+
+.unbox-cta h2 {
+     position: relative;
+     z-index: 2;
+     margin: 22px 0 35px;
+     font-family: "Playfair Display", serif;
+     font-size: clamp(48px, 7vw, 85px);
+     font-weight: 400;
+     line-height: 1.04;
+     letter-spacing: -3px;
+}
+
+.unbox-cta h2 em {
+     color: var(--ub-lime);
+     font-weight: 400;
+}
+
+.unbox-cta__button {
+     position: relative;
+     z-index: 2;
+     min-height: 54px;
+     padding: 0 23px;
+     display: inline-flex;
+     align-items: center;
+     justify-content: center;
+     gap: 22px;
+     background: var(--ub-lime);
+     color: var(--ub-dark);
+     font-size: 10px;
+     font-weight: 800;
+     letter-spacing: 1px;
+     text-decoration: none;
+     transition: transform .3s ease, background .3s ease;
+}
+
+.unbox-cta__button:hover {
+     transform: translateY(-4px);
+     background: white;
+}
+
+.unbox-cta__plant {
+     position: absolute;
+     right: 5%;
+     bottom: -65px;
+     width: 220px;
+     opacity: .3;
+     pointer-events: none;
+}
+
+/* ======================================
+   TABLET
+====================================== */
+
+@media (max-width: 1000px) {
+     .unbox-hero {
+          min-height: 650px;
+     }
+
+     .unbox-steps,
+     .unbox-guides {
+          padding-right: 5%;
+          padding-left: 5%;
+     }
+
+     .unbox-steps__grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+     }
+
+     .unbox-guides__grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+     }
+
+     .unbox-guide:last-child {
+          grid-column: 1 / -1;
+     }
+
+     .unbox-video__frame,
+     .unbox-video__caption {
+          width: 90%;
+     }
+}
+
+/* ======================================
+   MOBILE
+====================================== */
+
+@media (max-width: 650px) {
+     .unbox-hero {
+          min-height: 680px;
+          padding: 135px 22px 95px;
+     }
+
+     .unbox-hero__title {
+          font-size: clamp(55px, 13vw, 82px);
+          letter-spacing: -3px;
+     }
+
+     .unbox-hero__description {
+          font-size: 12px;
+     }
+
+     .unbox-hero__plant {
+          width: 175px;
+          right: -35px;
+          top: auto;
+          bottom: 55px;
+          opacity: .3;
+     }
+
+     .unbox-hero__vertical {
+          display: none;
+     }
+
+     .unbox-hero__bottom {
+          right: 20px;
+          left: 20px;
+          font-size: 7px;
+          letter-spacing: 1px;
+     }
+
+     .unbox-intro {
+          padding: 85px 22px 70px;
+     }
+
+     .unbox-intro h2 {
+          font-size: 46px;
+     }
+
+     .unbox-section-heading {
+          display: block;
+          margin-bottom: 38px;
+     }
+
+     .unbox-section-heading h2 {
+          font-size: 46px;
+     }
+
+     .unbox-section-heading__count {
+          display: inline-block;
+          margin-top: 18px;
+     }
+
+     .unbox-steps {
+          padding: 80px 18px;
+     }
+
+     .unbox-steps__grid {
+          grid-template-columns: 1fr;
+     }
+
+     .unbox-step {
+          min-height: 230px;
+          padding: 24px 21px;
+     }
+
+     .unbox-step h3 {
+          font-size: 25px;
+     }
+
+     /* MOBILE VIDEO */
+
+     .unbox-video {
+          padding: 85px 0 80px;
+     }
+
+     .unbox-video__heading {
+          margin-bottom: 35px;
+     }
+
+     .unbox-video__heading h2 {
+          font-size: 48px;
+          letter-spacing: -2px;
+     }
+
+     .unbox-video__frame {
+          width: 100%;
+          aspect-ratio: 16 / 9;
+          border-radius: 0 !important;
+          border-left: 0;
+          border-right: 0;
+     }
+
+     .unbox-video__overlay {
+          gap: 13px;
+     }
+
+     .unbox-video__play {
+          width: 55px;
+          height: 55px;
+     }
+
+     .unbox-video__overlay span {
+          font-size: 7px;
+          letter-spacing: 1.5px;
+     }
+
+     .unbox-video__frame::before {
+          top: 12px;
+          left: 12px;
+          font-size: 7px;
+     }
+
+     .unbox-video__frame::after {
+          right: 12px;
+          bottom: 12px;
+          font-size: 7px;
+     }
+
+     .unbox-video__caption {
+          width: 90%;
+          font-size: 8px;
+     }
+
+     /* GUIDES */
+
+     .unbox-guides {
+          padding: 85px 18px;
+     }
+
+     .unbox-guides__grid {
+          grid-template-columns: 1fr;
+          gap: 20px;
+     }
+
+     .unbox-guide:last-child {
+          grid-column: auto;
+     }
+
+     .unbox-guide__image {
+          aspect-ratio: 1.2 / 1;
+     }
+
+     .unbox-guide__content {
+          padding: 23px 19px;
+     }
+
+     .unbox-guide__content h3 {
+          min-height: 0;
+          font-size: 25px;
+     }
+
+     .unbox-guide__content p {
+          min-height: 0;
+     }
+
+     /* CTA */
+
+     .unbox-cta {
+          padding: 90px 18px;
+     }
+
+     .unbox-cta h2 {
+          font-size: 53px;
+     }
+
+     .unbox-cta__plant {
+          width: 130px;
+          right: -25px;
+          bottom: -35px;
+          opacity: .2;
+     }
+}
+
+/* ======================================
+   SMALL PHONES
+====================================== */
+
+@media (max-width: 380px) {
+     .unbox-hero__title {
+          font-size: 52px;
+     }
+
+     .unbox-video__heading h2 {
+          font-size: 41px;
+     }
+
+     .unbox-video__play {
+          width: 48px;
+          height: 48px;
+     }
+}
+
+/* ======================================
+   ACCESSIBILITY
+====================================== */
+
+@media (prefers-reduced-motion: reduce) {
+
+     .unbox-guide,
+     .unbox-guide__image img,
+     .unbox-guide__button,
+     .unbox-cta__button,
+     .unbox-step,
+     .unbox-step__icon {
+          transition: none !important;
+     }
+}

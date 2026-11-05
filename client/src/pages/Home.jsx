@@ -169,6 +169,7 @@ export default function Home() {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             entry.target.classList.add("revealed");
+            observer.unobserve(entry.target);
           }
         });
       },
@@ -212,7 +213,6 @@ export default function Home() {
           <span className="eyebrow">
             <Leaf size={14} /> A DIFFERENT WAY TO LIVE GREEN
           </span>
-
           <span className="intro-number">01 / OUR WORLD</span>
         </div>
 
@@ -292,7 +292,7 @@ export default function Home() {
       </section>
 
       {/* CUSTOMER REVIEWS */}
-      <section className="review-section">
+      <section className="review-section" id="reviews">
         <div className="review-header reveal">
           <div>
             <span className="eyebrow">03 / KIND WORDS</span>
@@ -305,6 +305,7 @@ export default function Home() {
             <button onClick={previousReview} aria-label="Previous review">
               <ChevronLeft size={20} />
             </button>
+
             <button onClick={nextReview} aria-label="Next review">
               <ChevronRight size={20} />
             </button>
@@ -322,7 +323,7 @@ export default function Home() {
             className="review-track"
             style={{ transform: `translateX(-${reviewIndex * 100}%)` }}
           >
-            {reviews.map((review, index) => (
+            {reviews.map((review) => (
               <article className="review-card" key={review.name}>
                 <Quote size={30} className="review-quote-icon" />
 
@@ -380,6 +381,7 @@ export default function Home() {
                 aria-label={`View ${item.title}`}
               >
                 <img src={item.image} alt={item.title} loading="lazy" />
+
                 <span className="news-image-icon">
                   <ArrowUpRight size={22} />
                 </span>
@@ -389,7 +391,9 @@ export default function Home() {
                 <span>
                   {item.source} / {String(index + 1).padStart(2, "0")}
                 </span>
+
                 <h4>{item.title}</h4>
+
                 <button
                   className="news-read"
                   onClick={() => setSelectedNews(item)}

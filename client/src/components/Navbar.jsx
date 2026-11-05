@@ -1,7 +1,6 @@
-import { useEffect, useRef, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import { ShoppingBag, User, Menu, X, Leaf } from "lucide-react";
-import gsap from "gsap";
+import { useEffect, useState } from "react";
+import { Link, useLocation } from "react-router-dom";
+import { ShoppingBag, Menu, X, Leaf } from "lucide-react";
 
 import { getCart, cartCount, onCartChange } from "../cart";
 import "../Style/Navbar.css";
@@ -9,97 +8,55 @@ import "../Style/Navbar.css";
 export default function Navbar() {
   const [count, setCount] = useState(() => cartCount(getCart()));
   const [open, setOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
 
-  const navbarRef = useRef(null);
   const location = useLocation();
-  const navigate = useNavigate();
 
-  const currentPage =
-    location.hash === "#faq"
-      ? "FAQs"
-      : location.hash === "#reviews"
-        ? "Reviews"
-        : location.pathname === "/products"
-          ? "Products"
-          : location.pathname === "/"
-            ? "Home"
-            : "";
-
-  // CART UPDATE
+  // UPDATE CART COUNT
   useEffect(() => {
     return onCartChange(() => {
       setCount(cartCount(getCart()));
     });
   }, []);
 
-  // MOBILE MENU CLOSE
+  // CLOSE MOBILE MENU ON NAVIGATION
   useEffect(() => {
     setOpen(false);
   }, [location.pathname, location.hash]);
 
-  // DETECT SCROLL
+  // CLOSE MENU ON DESKTOP
   useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 35);
+    const handleResize = () => {
+      if (window.innerWidth > 900) {
+        setOpen(false);
+      }
     };
 
-    handleScroll();
-    window.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener("resize", handleResize);
 
-    return () => window.removeEventListener("scroll", handleScroll);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
   }, []);
 
-  // GSAP BACKGROUND ANIMATION ONLY
-  useEffect(() => {
-    if (!navbarRef.current) return;
-
-    gsap.to(navbarRef.current, {
-      backgroundColor: scrolled
-        ? "rgba(16, 20, 15, 0.94)"
-        : "rgba(16, 20, 15, 0)",
-      backdropFilter: scrolled ? "blur(16px)" : "blur(0px)",
-      borderBottomColor: scrolled
-        ? "rgba(255,255,255,0.10)"
-        : "rgba(255,255,255,0)",
-      boxShadow: scrolled
-        ? "0 8px 30px rgba(0,0,0,0.12)"
-        : "0 0px 0px rgba(0,0,0,0)",
-      duration: 0.55,
-      ease: "power3.out",
-      overwrite: "auto",
-    });
-  }, [scrolled]);
-
-  // FAQ AND REVIEWS NAVIGATION
-  const goToSection = (section) => {
-    setOpen(false);
-
-    if (location.pathname !== "/") {
-      navigate("/");
-      setTimeout(() => {
-        document.getElementById(section)?.scrollIntoView({
-          behavior: "smooth",
-        });
-        window.history.replaceState(null, "", `/#${section}`);
-      }, 350);
-    } else {
-      document.getElementById(section)?.scrollIntoView({
-        behavior: "smooth",
-      });
-      window.history.replaceState(null, "", `/#${section}`);
-    }
+  const isActive = (path) => {
+    if (path === "/") return location.pathname === "/";
+    return (
+      location.pathname === path || location.pathname.startsWith(path + "/")
+    );
   };
 
+  const closeMenu = () => setOpen(false);
+
   return (
-    <header ref={navbarRef} className="navbar">
+    <header className="navbar">
       <div className="navbar__inner">
         {/* LOGO */}
-        <Link to="/" className="navbar__logo">
+        <Link to="/" className="navbar__logo" onClick={closeMenu}>
           <span className="navbar__logo-icon">
-            <Leaf size={21} strokeWidth={1.6} />
+            <Leaf size={22} strokeWidth={1.5} />
           </span>
-          <span>
+
+          <span className="navbar__logo-text">
             lights<span className="navbar__logo-dot">.</span>bio
           </span>
         </Link>
@@ -108,53 +65,81 @@ export default function Navbar() {
         <nav className={`navbar__links ${open ? "navbar__links--open" : ""}`}>
           <Link
             to="/"
-            className={`navbar__link ${currentPage === "Home" ? "active" : ""}`}
-            onClick={() => setOpen(false)}
+            className={`navbar__link ${isActive("/") ? "active" : ""}`}
+            onClick={closeMenu}
           >
             Home
           </Link>
 
           <Link
             to="/products"
-            className={`navbar__link ${currentPage === "Products" ? "active" : ""}`}
-            onClick={() => setOpen(false)}
+            className={`navbar__link ${isActive("/products") ? "active" : ""}`}
+            onClick={closeMenu}
           >
             Products
           </Link>
 
-          <button
-            className={`navbar__link ${currentPage === "FAQs" ? "active" : ""}`}
-            onClick={() => goToSection("faq")}
+          <Link
+            to="/unboxing"
+            className={`navbar__link ${isActive("/unboxing") ? "active" : ""}`}
+            onClick={closeMenu}
           >
-            FAQs
-          </button>
-
-          <button
-            className={`navbar__link ${currentPage === "Reviews" ? "active" : ""}`}
-            onClick={() => goToSection("reviews")}
-          >
-            Reviews
-          </button>
-        </nav>
-
-        {/* ACTIONS */}
-        <div className="navbar__actions">
-          <Link to="/profile" className="navbar__icon" aria-label="Profile">
-            <User size={19} strokeWidth={1.6} />
+            Unboxing
           </Link>
 
-          <Link to="/cart" className="navbar__cart" aria-label="Cart">
-            <ShoppingBag size={19} strokeWidth={1.6} />
+          <Link
+            to="/care-instructions"
+            className={`navbar__link ${
+              isActive("/care-instructions") ? "active" : ""
+            }`}
+            onClick={closeMenu}
+          >
+            Care Instructions
+          </Link>
+
+          {/* FAQ PAGE */}
+          <Link
+            to="/faqs"
+            className={`navbar__link ${isActive("/faqs") ? "active" : ""}`}
+            onClick={closeMenu}
+          >
+            FAQs
+          </Link>
+
+          {/* SEPARATE CUSTOMER REVIEWS PAGE */}
+          <Link
+            to="/customer-reviews"
+            className={`navbar__link ${
+              isActive("/customer-reviews") ? "active" : ""
+            }`}
+            onClick={closeMenu}
+          >
+            Reviews
+          </Link>
+        </nav>
+
+        {/* RIGHT ACTIONS */}
+        <div className="navbar__actions">
+          {/* CART ONLY - PROFILE ICON REMOVED */}
+          <Link
+            to="/cart"
+            className="navbar__cart"
+            aria-label={`Cart with ${count} items`}
+            onClick={closeMenu}
+          >
+            <ShoppingBag size={20} strokeWidth={1.6} />
             <span className="navbar__cart-count">{count}</span>
           </Link>
 
+          {/* MOBILE MENU */}
           <button
+            type="button"
             className="navbar__menu-btn"
-            onClick={() => setOpen(!open)}
-            aria-label="Toggle menu"
+            onClick={() => setOpen((previous) => !previous)}
+            aria-label={open ? "Close menu" : "Open menu"}
             aria-expanded={open}
           >
-            {open ? <X size={23} /> : <Menu size={23} />}
+            {open ? <X size={24} /> : <Menu size={24} />}
           </button>
         </div>
       </div>
