@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { QRCodeSVG } from "qrcode.react";
 import { API, formatPrice } from "../cart";
 
-// Shows the fixed-amount UPI QR + "Pay with Razorpay" link, and waits for the payment.
+// Shows a QR of the fixed-amount Razorpay payment link + a "Pay with Razorpay" button,
+// and waits for the payment.
 export default function UpiPayment({ order, onCancel }) {
   const navigate = useNavigate();
   const [checking, setChecking] = useState(false);
@@ -39,17 +41,16 @@ export default function UpiPayment({ order, onCancel }) {
 
   return (
     <div className="co upi">
-      <h2>Pay {formatPrice(order.amount)} with UPI</h2>
+      <h2>Pay {formatPrice(order.amount)}</h2>
 
-      {order.qrImage ? (
-        <>
-          <p className="upi__hint">Scan with any UPI app — GPay, PhonePe, Paytm, BHIM.</p>
-          <img className="upi__qr" src={order.qrImage} alt={`UPI QR code for ${formatPrice(order.amount)}`} />
-          <div className="upi__or"><span>or</span></div>
-        </>
-      ) : (
-        <p className="upi__hint">Tap the button below to pay securely with Razorpay.</p>
-      )}
+      <p className="upi__hint">Scan with your phone camera to open the payment page, then pay with any UPI app.</p>
+
+      <div className="upi__qrbox">
+        <QRCodeSVG value={order.paymentUrl} size={240} level="M" marginSize={2} />
+        <span className="upi__amount">{formatPrice(order.amount)}</span>
+      </div>
+
+      <div className="upi__or"><span>or</span></div>
 
       <a className="co-submit upi__btn" href={order.paymentUrl}>
         Pay {formatPrice(order.amount)} with Razorpay

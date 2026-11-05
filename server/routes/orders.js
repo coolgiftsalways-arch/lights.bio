@@ -138,23 +138,7 @@ router.post("/checkout", async (req, res) => {
     return res.status(502).json({ message: "Couldn't start payment. Please try again." });
   }
 
-  // UPI QR is optional: if QR Codes isn't enabled on your Razorpay account, customers still get the link
-  try {
-    const qr = await razorpay.qrCode.create({
-      type: "upi_qr",
-      name: "lights.bio",
-      usage: "single_use",
-      fixed_amount: true,
-      payment_amount: amount,
-      description: `Order ${order._id}`,
-      close_by: Math.floor(Date.now() / 1000) + 30 * 60, // 30 minutes
-      notes: { orderId: order._id.toString() },
-    });
-    order.razorpayQrId = qr.id;
-    order.qrImage = qr.image_url;
-  } catch (err) {
-    console.warn("Razorpay QR not created (is QR Codes enabled on your account?):", err.error?.description || err.message);
-  }
+
 
   await order.save();
 
@@ -218,7 +202,9 @@ router.get("/:id/status", async (req, res) => {
 // GET /api/orders/:id — order confirmation page
 router.get("/:id", async (req, res) => {
   if (!mongoose.isValidObjectId(req.params.id)) return res.status(404).json({ message: "Order not found" });
-  const order = await Order.findById(req.params.id).select("items amount currency status paymentMethod createdAt");
+  const order = await Order.findById(req.params.id)
+    .select("items amount currency status paymentMethod createdAt")
+    .populate("items.product", "images");
   if (!order) return res.status(404).json({ message: "Order not found" });
   res.json(order);
 });
