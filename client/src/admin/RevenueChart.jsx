@@ -23,9 +23,9 @@ export default function RevenueChart({ days }) {
 
   // clean round ticks (in rupees)
   const maxRs = max / 100;
-  const step = niceStep(maxRs / 3 || 1);
-  const top = Math.max(step * Math.ceil(maxRs / step), step);
-  const ticks = [0, 1, 2, 3].map((i) => (top / 3) * i).filter((t, i, a) => a.indexOf(t) === i);
+  const step = Math.max(1, niceStep(maxRs / 3 || 1)); // whole rupees, at least ₹1 per tick
+  const top = step * 3;
+  const ticks = [0, step, step * 2, top];
 
   const band = plotW / days.length;
   const labelEvery = Math.ceil(52 / band); // keep ~52px between date labels

@@ -59,7 +59,10 @@ const orderSchema = new mongoose.Schema(
         match: [/^[1-9]\d{5}$/, "Please enter a valid 6-digit pincode."],
       },
     },
-    amount: { type: Number, required: true }, // total in paise
+        amount: { type: Number, required: true }, // total charged, in paise (after any discount)
+    subtotal: Number, // before discount, in paise
+    discount: { type: Number, default: 0 }, // UPI discount, in paise
+    delivery: { minDays: Number, maxDays: Number }, // promised delivery window
     paymentMethod: { type: String, enum: ["upi", "cod"], required: true, default: "upi" },
     currency: { type: String, default: "INR" },
     status: {
@@ -73,6 +76,8 @@ const orderSchema = new mongoose.Schema(
     paymentUrl: String, // Razorpay payment link (fixed amount)
     qrImage: String, // Razorpay UPI QR image (fixed amount)
     razorpayPaymentId: String,
+    placedAt: { type: Date, index: true }, // when the order became real (UPI paid / COD placed)
+    seenByAdmin: Boolean, // false = shows as a new-order notification in the admin panel
   },
   { timestamps: true }
 );

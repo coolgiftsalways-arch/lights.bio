@@ -738,3 +738,103 @@
     transition: none !important;
   }
 }
+/* ---------- UPI "Save 10%" tag on the payment option ---------- */
+.co-pay__save {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #1d6b32;
+  color: #fff;
+  font-size: 0.7rem;
+  font-style: normal;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  vertical-align: middle;
+}
+.co-pay__option small s { opacity: 0.6; }
+/* =========================================================
+   Checkout: user-friendly extras + phone layout
+   ========================================================= */
+
+/* pincode autofill hint */
+.co-pin { display: flex; flex-direction: column; gap: 6px; }
+.co-pin__found {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  color: #1d6b32;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* "+ Add area or landmark (optional)" */
+.co-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  margin-top: -8px;
+  padding: 6px 0;
+  border: 0;
+  background: none;
+  color: #4d5c46;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.co-more:hover { color: #172117; }
+
+.co-paybar { display: contents; } /* desktop: just the button */
+
+@media (max-width: 760px) {
+  /* "clip" still hides decorations but lets the pay button stay sticky */
+  .co {
+    overflow: clip;
+    gap: 18px;
+  }
+  .co::before { display: none; } /* big background words crowd the small screen */
+
+  .co h2 { font-size: 28px; margin-top: 6px; }
+
+  /* 16px+ stops iPhones zooming in when a field is tapped */
+  .co-field input,
+  .co-field select {
+    height: 52px;
+    font-size: 16px;
+  }
+  .co-field > span { font-size: 12px; }
+  .co-field small { font-size: 12px; }
+
+  /* City + State and Phone + Email stay side by side where it fits */
+  .co-row { grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  .co-pay { gap: 10px; }
+  .co-pay__option { min-height: 0; padding: 14px; }
+  .co-pay__option small { font-size: 12px; line-height: 1.45; }
+
+  /* Pay button sticks to the bottom of the screen while filling the form */
+  .co-paybar {
+    display: block;
+    position: sticky;
+    bottom: 0;
+    z-index: 5;
+    margin: 0 -19px -27px;
+    padding: 12px 19px calc(12px + env(safe-area-inset-bottom));
+    background: linear-gradient(to top, var(--checkout-panel, #f0efe6) 75%, transparent);
+  }
+  .co-paybar .co-submit {
+    min-height: 56px;
+    margin: 0;
+    font-size: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+  }
+}
+
+@media (max-width: 380px) {
+  .co-row { grid-template-columns: 1fr; } /* very small phones: one per line */
+}

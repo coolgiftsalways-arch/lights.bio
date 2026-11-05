@@ -116,7 +116,12 @@ function OrderDrawer({ id, onClose, onChanged }) {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    adminFetch(`/orders/${id}`).then(setOrder).catch((e) => setError(e.message));
+    adminFetch(`/orders/${id}`)
+      .then((o) => {
+        setOrder(o);
+        window.dispatchEvent(new Event("adm-notif-refresh")); // opening marks it read
+      })
+      .catch((e) => setError(e.message));
   }, [id]);
 
   const changeStatus = async (status) => {
@@ -193,10 +198,19 @@ function OrderDrawer({ id, onClose, onChanged }) {
                   </li>
                 ))}
               </ul>
+                            {order.discount > 0 && (
+                <div className="drawer__line">
+                  <span>Subtotal {formatPrice(order.subtotal)} · UPI discount</span>
+                  <span>−{formatPrice(order.discount)}</span>
+                </div>
+              )}
               <div className="drawer__total">
                 <span>Total</span>
                 <strong>{formatPrice(order.amount)}</strong>
               </div>
+              {order.delivery?.minDays && (
+                <p className="cell-sub">Promised delivery: {order.delivery.minDays}–{order.delivery.maxDays} days</p>
+              )}
             </div>
           </>
         )}

@@ -148,7 +148,40 @@ router.get("/orders/:id", async (req, res) => {
   if (!mongoose.isValidObjectId(req.params.id)) return res.status(404).json({ message: "Order not found" });
   const order = await Order.findById(req.params.id).populate("items.product", "images slug");
   if (!order) return res.status(404).json({ message: "Order not found" });
+  // Opening an order marks its notification as read
+  if (order.seenByAdmin === false) await Order.updateOne({ _id: order._id }, { seenByAdmin: true });
   res.json(order);
+});
+
+// ---------- notifications ----------
+
+// GET /api/admin/notifications -> { unread, items: latest real orders (newest first) }
+router.get("/notifications", async (req, res) => {
+  // One-time backfill for orders placed before notifications existed:
+  // they get placedAt = createdAt. Ones still waiting to ship (paid / COD confirmed)
+  // start as unread so you see them; shipped/delivered/cancelled ones show as read history.
+  const legacy = { placedAt: { $exists: false }, status: { $in: ["paid", "confirmed", "shipped", "delivered", "cancelled"] } };
+  if (await Order.exists(legacy)) {
+    const toShip = await Order.find({ ...legacy, status: { $in: ["paid", "confirmed"] } }).distinct("_id");
+    await Order.updateMany(legacy, [{ $set: { placedAt: "$createdAt" } }], { updatePipeline: true });
+    if (toShip.length) await Order.updateMany({ _id: { $in: toShip } }, { seenByAdmin: false });
+  }
+
+  const real = { placedAt: { $exists: true } };
+  const [items, unread] = await Promise.all([
+    Order.find(real)
+      .sort({ placedAt: -1 })
+      .limit(20)
+      .select("customer.name shippingAddress.city amount paymentMethod status placedAt seenByAdmin items.quantity"),
+    Order.countDocuments({ seenByAdmin: false }),
+  ]);
+  res.json({ unread, items });
+});
+
+// POST /api/admin/notifications/read-all
+router.post("/notifications/read-all", async (req, res) => {
+  await Order.updateMany({ seenByAdmin: false }, { seenByAdmin: true });
+  res.json({ unread: 0 });
 });
 
 // PATCH /api/admin/orders/:id  { status }

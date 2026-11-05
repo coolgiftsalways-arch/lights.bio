@@ -657,3 +657,27 @@
           animation: none;
      }
 }
+/* ---------- discount & delivery estimate on the receipt ---------- */
+.receipt__line {
+  display: flex;
+  justify-content: space-between;
+  padding-bottom: 12px;
+  color: var(--muted);
+}
+.receipt__save { color: var(--lime); font-weight: 600; }
+.receipt__saved {
+  margin: 14px 0 0;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: rgba(214, 255, 117, 0.1);
+  color: var(--lime);
+  font-size: 0.92rem;
+  text-align: center;
+}
+.receipt__eta {
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+  text-align: center;
+}
+.receipt__eta strong { color: #fff; }

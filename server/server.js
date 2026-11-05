@@ -42,6 +42,7 @@ app.use("/api/orders", require("./routes/orders"));
 app.use("/api/admin", require("./routes/admin"));
 app.get("/api/health", (req, res) => res.json({ status: "ok" }));
 app.use("/api", (req, res) => res.status(404).json({ message: "Not found" }));
+app.use("/api/pincode", require("./routes/pincode"));
 
 // The React website (built into client/dist), served from the same domain
 const dist = path.join(__dirname, "..", "client", "dist");

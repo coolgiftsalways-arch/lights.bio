@@ -4,6 +4,7 @@ const mongoose = require("mongoose");
 const Razorpay = require("razorpay");
 const Product = require("../models/Product");
 const Order = require("../models/Order");
+const { priceOrder } = require("../config/pricing");
 
 const router = express.Router();
 
@@ -35,7 +36,7 @@ async function reserveStock(items) {
 async function markPaid(orderId, paymentId) {
   const order = await Order.findOneAndUpdate(
     { _id: orderId, status: "pending" },
-    { status: "paid", razorpayPaymentId: paymentId },
+    { status: "paid", razorpayPaymentId: paymentId, placedAt: new Date(), seenByAdmin: false },
     { returnDocument: "after" }
   );
   if (!order) return; // already handled
@@ -96,9 +97,11 @@ router.post("/checkout", async (req, res) => {
     orderItems.push({ product: product._id, name: product.name, price: product.price, quantity: qty });
   }
 
-  const amount = orderItems.reduce((sum, i) => sum + i.price * i.quantity, 0);
+  const subtotal = orderItems.reduce((sum, i) => sum + i.price * i.quantity, 0);
+  // UPI gets 10% off + faster delivery; COD pays full price + slower delivery (see config/pricing.js)
+  const { discount, total: amount, delivery } = priceOrder(subtotal, paymentMethod);
 
-  const order = new Order({ items: orderItems, customer, shippingAddress, amount, paymentMethod });
+  const order = new Order({ items: orderItems, customer, shippingAddress, amount, subtotal, discount, delivery, paymentMethod });
   try {
     await order.validate();
   } catch (err) {
@@ -111,12 +114,16 @@ router.post("/checkout", async (req, res) => {
     const outOfStock = await reserveStock(orderItems);
     if (outOfStock) return res.status(400).json({ message: `${outOfStock.name} just sold out.` });
     order.status = "confirmed";
+    order.placedAt = new Date();
+    order.seenByAdmin = false;
     await order.save();
-    return res.status(201).json({ orderId: order._id, paymentMethod, amount });
+    return res.status(201).json({ orderId: order._id, paymentMethod, amount, subtotal, discount, delivery });
   }
 
-  // ----- UPI: fixed-amount Razorpay QR + payment link for the same order -----
-  const description = orderItems.map((i) => `${i.name} x${i.quantity}`).join(", ").slice(0, 250);
+  // ----- UPI: fixed-amount Razorpay payment link for this order -----
+  const description = (
+    orderItems.map((i) => `${i.name} x${i.quantity}`).join(", ") + (discount ? " (10% UPI discount applied)" : "")
+  ).slice(0, 250);
 
   try {
     const link = await razorpay.paymentLink.create({
@@ -138,14 +145,15 @@ router.post("/checkout", async (req, res) => {
     return res.status(502).json({ message: "Couldn't start payment. Please try again." });
   }
 
-
-
   await order.save();
 
   res.status(201).json({
     orderId: order._id,
     paymentMethod,
     amount,
+    subtotal,
+    discount,
+    delivery,
     paymentUrl: order.paymentUrl,
     qrImage: order.qrImage || null,
   });
@@ -203,7 +211,7 @@ router.get("/:id/status", async (req, res) => {
 router.get("/:id", async (req, res) => {
   if (!mongoose.isValidObjectId(req.params.id)) return res.status(404).json({ message: "Order not found" });
   const order = await Order.findById(req.params.id)
-    .select("items amount currency status paymentMethod createdAt")
+    .select("items amount subtotal discount delivery currency status paymentMethod createdAt placedAt")
     .populate("items.product", "images");
   if (!order) return res.status(404).json({ message: "Order not found" });
   res.json(order);

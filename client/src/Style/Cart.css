@@ -737,3 +737,91 @@
     transition-duration: .01ms !important;
   }
 }
+
+/* ---------- UPI discount & delivery (checkout summary) ---------- */
+.summary__row--discount {
+  color: #1d6b32;
+  font-weight: 600;
+}
+.summary__row--discount span:first-child {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.summary__delivery {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 2px 0 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.06);
+  font-size: 0.88rem;
+  line-height: 1.4;
+}
+.summary__delivery svg { flex-shrink: 0; margin-top: 2px; }
+.summary__nudge {
+  margin: 0;
+  font-size: 0.82rem;
+  opacity: 0.75;
+}
+/* ---------- phones: collapsible order summary at the top of checkout ---------- */
+.msum { display: none; }
+
+@media (max-width: 760px) {
+  /* "clip" hides the decorations like "hidden" does, but lets the pay button stay pinned */
+  .cartpage:has(.cartpage__layout--checkout) { overflow: clip; }
+  .cartpage__layout--checkout { margin-top: 20px; gap: 14px; }
+  .cartpage__layout--checkout > .summary { display: none; } /* replaced by .msum on phones */
+
+  .msum {
+    display: block;
+    overflow: hidden;
+    border-radius: 14px;
+    background: var(--checkout-lime, #d6ff75);
+    color: #172117;
+  }
+  .msum__bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 14px 16px;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+  }
+  .msum__label {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    flex: 1;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .msum__chev { transition: transform 0.25s ease; }
+  .msum--open .msum__chev { transform: rotate(180deg); }
+  .msum__total { display: flex; align-items: baseline; gap: 8px; }
+  .msum__total s { font-size: 13px; opacity: 0.55; }
+  .msum__total strong { font-size: 18px; }
+
+  .msum__body {
+    padding: 4px 16px 12px;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+  }
+  .msum__body .summary__items { margin-top: 12px; }
+  .msum__body .summary__row--discount { margin-top: 12px; }
+
+  .msum__delivery {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+    padding: 10px 16px;
+    background: rgba(0, 0, 0, 0.06);
+    font-size: 12.5px;
+  }
+}

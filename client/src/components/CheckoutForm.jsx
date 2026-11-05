@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Smartphone, Banknote } from "lucide-react";
-import { API } from "../cart";
+import { Smartphone, Banknote, Plus, MapPin } from "lucide-react";
+import { API, cartTotal, formatPrice } from "../cart";
+import { priceOrder, deliveryDays, UPI_DISCOUNT_PERCENT } from "../pricing";
 import UpiPayment from "./UpiPayment";
 import "../Style/CheckoutForm.css";
 
@@ -32,19 +33,63 @@ function validate(f) {
 }
 
 // items: [{ productId, quantity }]
-export default function CheckoutForm({ items }) {
+// payment / onPaymentChange come from the Checkout page so its summary can show the right price
+export default function CheckoutForm({ items, payment: paymentProp, onPaymentChange }) {
   const [form, setForm] = useState(EMPTY);
-  const [payment, setPayment] = useState("upi"); // "upi" | "cod"
+  const [ownPayment, setOwnPayment] = useState("upi"); // used if the parent doesn't control it
+  const payment = paymentProp ?? ownPayment;
+  const setPayment = onPaymentChange ?? setOwnPayment;
+  const subtotal = cartTotal(items || []);
+  const upiPrice = priceOrder(subtotal, "upi");
+  const codPrice = priceOrder(subtotal, "cod");
   const [errors, setErrors] = useState({});
   const [serverError, setServerError] = useState("");
   const [loading, setLoading] = useState(false);
   const [upiOrder, setUpiOrder] = useState(null); // set after a UPI order is created
   const navigate = useNavigate();
+  const [showExtra, setShowExtra] = useState(false); // "Area / landmark" are optional, hidden until asked
+  const [pinInfo, setPinInfo] = useState(""); // "Pune, Maharashtra" under the pincode box
+  const autoFilled = useRef({ city: "", state: "" });
+
+  // Typing a 6-digit pincode fills in city + state (user can still edit them)
+  const lookupPincode = async (pin) => {
+    setPinInfo("");
+    try {
+      const res = await fetch(`${API}/pincode/${pin}`);
+      if (!res.ok) return;
+      const { city, state } = await res.json();
+      const norm = (s) => String(s).toLowerCase().replace(/&/g, "and").replace(/\s+/g, " ").trim();
+      const matchedState = STATES.find((s) => norm(s) === norm(state)) || "";
+      setForm((f) => {
+        // only overwrite fields that are empty or that we filled in last time
+        const next = { ...f };
+        if (!f.city || f.city === autoFilled.current.city) next.city = city;
+        if (matchedState && (!f.state || f.state === autoFilled.current.state)) next.state = matchedState;
+        autoFilled.current = { city: next.city, state: next.state };
+        return next;
+      });
+      setErrors((err) => ({ ...err, city: undefined, state: undefined }));
+      setPinInfo(`${city}, ${state}`);
+    } catch {
+      /* no autofill — customer types city/state */
+    }
+  };
 
   const update = (e) => {
-    const { name, value } = e.target;
+    const { name } = e.target;
+    let { value } = e.target;
+    if (name === "pincode") value = value.replace(/\D/g, "").slice(0, 6); // digits only
+    if (name === "phone") {
+      value = value.replace(/\D/g, ""); // "+91 93245-56356" -> "919324556356"
+      if (value.length > 10 && /^(91|0)/.test(value)) value = value.replace(/^(91|0)/, "");
+      value = value.slice(0, 10);
+    }
     setForm((f) => ({ ...f, [name]: value }));
     if (errors[name]) setErrors((err) => ({ ...err, [name]: undefined }));
+    if (name === "pincode") {
+      if (/^[1-9]\d{5}$/.test(value)) lookupPincode(value);
+      else setPinInfo("");
+    }
   };
 
   const submit = async (e) => {
@@ -53,7 +98,13 @@ export default function CheckoutForm({ items }) {
 
     const found = validate(form);
     setErrors(found);
-    if (Object.keys(found).length) return;
+    if (Object.keys(found).length) {
+      // take the customer straight to the first problem
+      const first = document.querySelector(`.co [name="${Object.keys(found)[0]}"]`);
+      first?.scrollIntoView({ behavior: "smooth", block: "center" });
+      first?.focus({ preventScroll: true });
+      return;
+    }
     if (!items?.length) return setServerError("Your cart is empty.");
 
     setLoading(true);
@@ -101,29 +152,42 @@ export default function CheckoutForm({ items }) {
   return (
     <form className="co" onSubmit={submit} noValidate>
       <h2>Contact details</h2>
-      {field("name", "Full name *", { autoComplete: "name" })}
+      {field("name", "Full name *", { autoComplete: "name", autoCapitalize: "words", enterKeyHint: "next" })}
       <div className="co-row">
-        {field("email", "Email *", { type: "email", autoComplete: "email" })}
-        {field("phone", "Mobile number *", { type: "tel", inputMode: "numeric", maxLength: 10, autoComplete: "tel-national", placeholder: "10-digit number" })}
+        {field("phone", "Mobile number *", { type: "tel", inputMode: "numeric", autoComplete: "tel-national", placeholder: "10-digit number", enterKeyHint: "next" })}
+        {field("email", "Email *", { type: "email", inputMode: "email", autoComplete: "email", autoCapitalize: "off", enterKeyHint: "next" })}
       </div>
 
       <h2>Shipping address</h2>
-      {field("line1", "House no., building, street *", { autoComplete: "address-line1" })}
-      {field("line2", "Area, locality", { autoComplete: "address-line2" })}
-      {field("landmark", "Landmark")}
-      <div className="co-row">
-        {field("city", "City *", { autoComplete: "address-level2" })}
-        {field("pincode", "Pincode *", { inputMode: "numeric", maxLength: 6, autoComplete: "postal-code" })}
+      <div className="co-pin">
+        {field("pincode", "Pincode *", { inputMode: "numeric", autoComplete: "postal-code", placeholder: "6 digits", enterKeyHint: "next" })}
+        {pinInfo && (
+          <p className="co-pin__found"><MapPin size={14} /> {pinInfo}</p>
+        )}
       </div>
+      {field("line1", "House no., building, street *", { autoComplete: "address-line1", enterKeyHint: "next" })}
+      {showExtra || form.line2 || form.landmark ? (
+        <div className="co-row">
+          {field("line2", "Area, locality", { autoComplete: "address-line2" })}
+          {field("landmark", "Landmark")}
+        </div>
+      ) : (
+        <button type="button" className="co-more" onClick={() => setShowExtra(true)}>
+          <Plus size={15} /> Add area or landmark (optional)
+        </button>
+      )}
+      <div className="co-row">
+        {field("city", "City *", { autoComplete: "address-level2", autoCapitalize: "words" })}
 
-      <label className={`co-field ${errors.state ? "co-field--error" : ""}`}>
-        <span>State *</span>
-        <select name="state" value={form.state} onChange={update} autoComplete="address-level1">
-          <option value="">Select state</option>
-          {STATES.map((s) => <option key={s}>{s}</option>)}
-        </select>
-        {errors.state && <small>{errors.state}</small>}
-      </label>
+        <label className={`co-field ${errors.state ? "co-field--error" : ""}`}>
+          <span>State *</span>
+          <select name="state" value={form.state} onChange={update} autoComplete="address-level1">
+            <option value="">Select state</option>
+            {STATES.map((s) => <option key={s}>{s}</option>)}
+          </select>
+          {errors.state && <small>{errors.state}</small>}
+        </label>
+      </div>
 
       <h2>Payment method</h2>
       <div className="co-pay">
@@ -131,8 +195,13 @@ export default function CheckoutForm({ items }) {
           <input type="radio" name="payment" value="upi" checked={payment === "upi"} onChange={() => setPayment("upi")} />
           <Smartphone size={22} />
           <span>
-            <strong>UPI</strong>
-            <small>Scan QR or pay with Razorpay</small>
+            <strong>
+              UPI {upiPrice.discount > 0 && <em className="co-pay__save">Save {UPI_DISCOUNT_PERCENT}%</em>}
+            </strong>
+            <small>
+              {upiPrice.discount > 0 ? <><s>{formatPrice(subtotal)}</s> {formatPrice(upiPrice.total)}</> : formatPrice(upiPrice.total)}
+              {" · "}Faster delivery: {deliveryDays("upi")}
+            </small>
           </span>
         </label>
         <label className={`co-pay__option ${payment === "cod" ? "co-pay__option--active" : ""}`}>
@@ -140,16 +209,24 @@ export default function CheckoutForm({ items }) {
           <Banknote size={22} />
           <span>
             <strong>Cash on Delivery</strong>
-            <small>Pay when your order arrives</small>
+            <small>
+              {formatPrice(codPrice.total)} (full price) · Delivery: {deliveryDays("cod")}
+            </small>
           </span>
         </label>
       </div>
 
       {serverError && <p className="co-server-error">{serverError}</p>}
 
+      <div className="co-paybar">
       <button className="co-submit" disabled={loading}>
-        {loading ? "Please wait…" : payment === "cod" ? "Place order" : "Continue to UPI payment"}
+        {loading
+          ? "Please wait…"
+          : payment === "cod"
+            ? `Place order · ${formatPrice(codPrice.total)}`
+            : `Pay ${formatPrice(upiPrice.total)} with UPI`}
       </button>
+      </div>
     </form>
   );
 }

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Check, X, PackageCheck, Truck, Home, Sparkles, Smartphone, Banknote } from "lucide-react";
 import { clearCart, formatPrice, imageUrl, API } from "../cart";
+import { deliveryWindow } from "../pricing";
 import "../Style/OrderResult.css";
 
 const STEPS = [
@@ -106,10 +107,24 @@ export default function OrderResult({ success = false }) {
               ))}
             </ul>
 
+                        {order.discount > 0 && (
+              <div className="receipt__line">
+                <span>UPI discount</span>
+                <span className="receipt__save">−{formatPrice(order.discount)}</span>
+              </div>
+            )}
             <div className="receipt__total">
               <span>{isCod ? "To pay on delivery" : "Total paid"}</span>
               <strong>{formatPrice(order.amount)}</strong>
             </div>
+            {order.discount > 0 && (
+              <p className="receipt__saved">🎉 You saved {formatPrice(order.discount)} by paying with UPI</p>
+            )}
+            {order.delivery?.minDays && (
+              <p className="receipt__eta">
+                Estimated delivery: <strong>{deliveryWindow(order.delivery, new Date(order.placedAt || order.createdAt))}</strong>
+              </p>
+            )}
 
             <ol className="tracker">
               {STEPS.map(({ label, icon: Icon }, i) => (

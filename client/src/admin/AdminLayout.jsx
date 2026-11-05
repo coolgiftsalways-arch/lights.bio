@@ -1,6 +1,7 @@
 import { Navigate, NavLink, Outlet, Link } from "react-router-dom";
 import { LayoutDashboard, ShoppingBag, Package, Mail, LogOut, ExternalLink } from "lucide-react";
 import { getToken, logout } from "./api";
+import { NotificationsProvider, NotificationBell } from "./Notifications";
 import "./admin.css";
 
 const NAV = [
@@ -14,6 +15,7 @@ export default function AdminLayout() {
   if (!getToken()) return <Navigate to="/admin/login" replace />;
 
   return (
+    <NotificationsProvider>
     <div className="adm adm-shell">
       {/* Desktop sidebar */}
       <aside className="adm-side">
@@ -23,6 +25,7 @@ export default function AdminLayout() {
         </div>
 
         <nav className="adm-side__nav">
+          <NotificationBell />
           {NAV.map(({ to, label, icon: Icon, end }) => (
             <NavLink key={to} to={to} end={end} className="adm-side__link">
               <Icon size={18} /> {label}
@@ -46,6 +49,7 @@ export default function AdminLayout() {
           <Link to="/admin" className="adm-brand adm-topbar__brand">lights.bio</Link>
           <span className="adm-side__tag">Admin</span>
           <div className="adm-topbar__actions">
+            <NotificationBell variant="top" />
             <a href="/" target="_blank" rel="noreferrer" className="adm-topbar__icon" aria-label="View store">
               <ExternalLink size={18} />
             </a>
@@ -70,5 +74,6 @@ export default function AdminLayout() {
         ))}
       </nav>
     </div>
+    </NotificationsProvider>
   );
 }
