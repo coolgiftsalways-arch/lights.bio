@@ -1,0 +1,62 @@
+/* GLOBAL RESET */
+* {
+     margin: 0;
+     padding: 0;
+     box-sizing: border-box;
+}
+
+html {
+     scroll-behavior: auto !important;
+     overflow-x: hidden;
+}
+
+body {
+     width: 100%;
+     min-height: 100vh;
+     margin: 0;
+     overflow-x: hidden;
+     -webkit-font-smoothing: antialiased;
+}
+
+#root {
+     width: 100%;
+     min-height: 100vh;
+}
+
+/* LENIS */
+html.lenis,
+html.lenis body {
+     height: auto;
+}
+
+.lenis.lenis-smooth {
+     scroll-behavior: auto !important;
+}
+
+.lenis.lenis-stopped {
+     overflow: hidden;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+     overscroll-behavior: contain;
+}
+
+/* MAIN CONTENT */
+main {
+     width: 100%;
+     min-height: 100vh;
+}
+
+/* IMAGES */
+img {
+     max-width: 100%;
+}
+
+/* MOBILE */
+@media (max-width: 768px) {
+
+     html,
+     body {
+          overflow-x: hidden;
+     }
+}

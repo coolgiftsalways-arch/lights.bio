@@ -1,50 +1,147 @@
-import Newsletter from "./Newsletter";
+
+import { Link } from "react-router-dom";
+import "../Style/Footer.css";
 
 export default function Footer() {
+ 
+
   return (
-    <footer className="footer">
+    <footer className="footer" id="footer">
+      <div className="footer__glow"></div>
+
       <div className="container">
-        <p className="footer__notice">
-          <strong>Official notice:</strong> write your own distribution or disclaimer note here.
-        </p>
+        {/* NOTICE */}
+        <div className="footer__notice">
+          <span className="footer__notice-dot"></span>
+          <p>
+            <strong>Official notice:</strong> lights.bio is a plant discovery
+            and shopping experience. Explore our collection and bring nature
+            into your space.
+          </p>
+        </div>
 
+        {/* HERO */}
+        <div className="footer__hero">
+          <div className="footer__hero-content">
+            <span className="footer__eyebrow">
+              <span className="footer__leaf">✳</span>
+              ROOTED IN NATURE
+            </span>
+
+            <h2>
+              Bring life
+              <br />
+              <span>into your space.</span>
+            </h2>
+
+            <p>
+              A greener home starts with one little plant. Find your favourite
+              and let nature become part of your everyday.
+            </p>
+
+            <Link to="/products" className="footer__shop">
+              Explore plants <span>↗</span>
+            </Link>
+          </div>
+
+          <div className="footer__quote">
+            <span>01 / A GREENER WAY OF LIVING</span>
+            <p>
+              "Grow a little. Live a little greener. Make every corner feel
+              alive."
+            </p>
+            <div className="footer__quote-line"></div>
+          </div>
+        </div>
+
+        <div className="footer__divider"></div>
+
+        {/* LINKS */}
         <div className="footer__grid">
-          <a href="#top" className="logo">light bio</a>
+          {/* BRAND */}
+          <div className="footer__brand">
+            <Link to="/" className="footer__logo">
+              <span className="footer__logo-icon">✳</span>
+              light<span>.bio</span>
+            </Link>
 
-          <div>
-            <h4>Quick links</h4>
-            <a href="#">Home</a>
-            <a href="#">Products</a>
-            <a href="#">Unboxing</a>
-            <a href="#">Care Instructions</a>
-            <a href="#faq">FAQs</a>
-            <a href="#reviews">Customer Reviews</a>
+            <p>
+              Plants for your space. Inspiration for your lifestyle. A little
+              more nature, every day.
+            </p>
+
+            <div className="footer__socials">
+              <a
+                href="https://instagram.com"
+                target="_blank"
+                rel="noreferrer"
+                aria-label="Instagram"
+              >
+                ◎
+              </a>
+
+              <a
+                href="https://facebook.com"
+                target="_blank"
+                rel="noreferrer"
+                aria-label="Facebook"
+              >
+                f
+              </a>
+
+              <a
+                href="https://youtube.com"
+                target="_blank"
+                rel="noreferrer"
+                aria-label="YouTube"
+              >
+                ▶
+              </a>
+            </div>
+
+            <p className="footer__location">
+              <span>⌖</span>
+              Made for plant lovers everywhere
+            </p>
           </div>
 
-          <div>
-            <h4>Support</h4>
-            <a href="#">Community Guidelines</a>
-            <a href="#">Contact Us</a>
-            <a href="#">My Orders</a>
-            <a href="#">Retailer Locator</a>
+          {/* QUICK LINKS */}
+          <div className="footer__column">
+            <h4>QUICK LINKS</h4>
+            <Link to="/">Home</Link>
+            <Link to="/products">All Products</Link>
+            <Link to="/products">Shop by Category</Link>
+            <Link to="/products">New Arrivals</Link>
+            <a href="/#faq">FAQs</a>
+            <a href="/#reviews">Customer Reviews</a>
           </div>
 
-          <div>
-            <p className="footer__join">Join our email list for updates and stories.</p>
-            <Newsletter variant="footer" />
-            <p className="footer__legal">By subscribing, you agree to our Privacy Policy.</p>
+          {/* PLANT WORLD */}
+          <div className="footer__column">
+            <h4>PLANT WORLD</h4>
+            <Link to="/products">Indoor Plants</Link>
+            <Link to="/products">Outdoor Plants</Link>
+            <Link to="/products">Succulents</Link>
+            <Link to="/products">Flowering Plants</Link>
+            <Link to="/products">Plant Accessories</Link>
+            <a href="/#care">Care Instructions</a>
+            <a href="/#unboxing">Unboxing</a>
+          </div>
+
+          {/* SUPPORT */}
+          <div className="footer__column">
+            <h4>SUPPORT</h4>
+            <a href="/#community">Community Guidelines</a>
+            <a href="mailto:hello@lights.bio">Contact Us</a>
+            <Link to="/cart">My Cart</Link>
+            <a href="mailto:hello@lights.bio">Order Support</a>
+            <a href="/shipping">Shipping Information</a>
+            <a href="/refund">Returns & Refunds</a>
           </div>
         </div>
 
-        <div className="footer__bar">
-          <span>© {new Date().getFullYear()}, Light Bio clone. Practice project.</span>
-          <span className="footer__links">
-            <a href="#">Privacy Policy</a>
-            <a href="#">Terms of Service</a>
-            <a href="#">Shipping Policy</a>
-            <a href="#">Refund Policy</a>
-          </span>
-        </div>
+        {/* NEWSLETTER */}
+       
       </div>
     </footer>
   );
