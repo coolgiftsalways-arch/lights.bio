@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { Check, X, PackageCheck, Truck, Home, Sparkles, Smartphone, Banknote } from "lucide-react";
+import { Check, X, PackageCheck, Truck, Home, Sparkles, Smartphone, Banknote, ExternalLink } from "lucide-react";
 import { clearCart, formatPrice, imageUrl, API } from "../cart";
 import { deliveryWindow } from "../pricing";
 import "../Style/OrderResult.css";
@@ -30,7 +30,8 @@ export default function OrderResult({ success = false }) {
   }, [success, orderId]);
 
   const isCod = order?.paymentMethod === "cod";
-  const step = STEP_INDEX[order?.status] ?? 0;
+    // A courier booked (tracking number exists) counts as "Packed"
+  const step = Math.max(STEP_INDEX[order?.status] ?? 0, order?.shipping?.awb ? 1 : 0);
   const date = order && new Date(order.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" });
 
   if (!success) {
@@ -126,6 +127,22 @@ export default function OrderResult({ success = false }) {
               </p>
             )}
 
+                        {order.shipping?.awb && (
+              <div className="receipt__ship">
+                <div>
+                  <span className="receipt__label">Shipped with {order.shipping.courier || "our courier"}</span>
+                  <span className="mono">AWB {order.shipping.awb}</span>
+                  {order.shipping.status && <span className="receipt__shipstatus">{order.shipping.status}</span>}
+                </div>
+                {order.shipping.trackUrl && (
+                  <a className="rbtn rbtn--ghost receipt__track" href={order.shipping.trackUrl} target="_blank" rel="noreferrer">
+                    Track package <ExternalLink size={15} />
+                  </a>
+                )}
+              </div>
+            )}
+
+
             <ol className="tracker">
               {STEPS.map(({ label, icon: Icon }, i) => (
                 <li key={label} className={i <= step ? "tracker__step tracker__step--done" : "tracker__step"}>
@@ -140,6 +157,13 @@ export default function OrderResult({ success = false }) {
         <div className="result__actions">
           <Link to="/products" className="rbtn rbtn--primary">Continue shopping</Link>
           <Link to="/" className="rbtn rbtn--ghost">Back to home</Link>
+                    {order ? (
+            <Link to={`/track?order=${order._id.slice(-6).toUpperCase()}`} className="rbtn rbtn--ghost">
+              Track this order
+            </Link>
+          ) : (
+            <Link to="/" className="rbtn rbtn--ghost">Back to home</Link>
+          )}
         </div>
       </div>
     </section>

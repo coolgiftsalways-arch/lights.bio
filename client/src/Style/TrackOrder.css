@@ -1,0 +1,155 @@
+/* Track your order — builds on OrderResult.css (dark, glowing) */
+
+.track__form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  max-width: 440px;
+  padding: 28px;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: var(--card);
+  backdrop-filter: blur(12px);
+  text-align: left;
+}
+
+.track__field { display: flex; flex-direction: column; gap: 8px; }
+.track__field > span {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.track__prefix {
+  display: flex;
+  align-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 14px;
+  background: rgba(0, 0, 0, 0.35);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.track__prefix:focus-within {
+  border-color: var(--lime);
+  box-shadow: 0 0 0 3px rgba(214, 255, 117, 0.15);
+}
+.track__prefix b {
+  padding: 0 4px 0 16px;
+  color: var(--muted);
+  font-weight: 600;
+}
+.track__prefix input {
+  flex: 1;
+  min-width: 0;
+  padding: 15px 16px 15px 6px;
+  border: 0;
+  background: none;
+  color: #fff;
+  font: inherit;
+  font-size: 16px; /* no zoom on iPhone */
+  letter-spacing: 0.04em;
+  outline: none;
+}
+.track__prefix input::placeholder { color: rgba(255, 255, 255, 0.3); }
+
+.track__error {
+  margin: 0;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: rgba(255, 140, 120, 0.12);
+  color: #ff8c78;
+  font-size: 0.9rem;
+}
+.track__submit { width: 100%; border: 0; cursor: pointer; font: inherit; font-weight: 600; }
+.track__submit:disabled { opacity: 0.6; cursor: wait; }
+.track__hint { margin: 0; color: var(--muted); font-size: 0.85rem; text-align: center; }
+.track__hint b { color: #fff; }
+
+/* result */
+.track .result__title { font-size: clamp(2rem, 4.5vw, 3rem); }
+.track__tracker { margin: 4px 0 8px; }
+
+.track__ship {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 22px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+}
+.track__ship-head { display: flex; align-items: center; gap: 12px; }
+.track__ship-head > div { display: flex; flex-direction: column; flex: 1; min-width: 0; gap: 2px; }
+.track__ship-head .mono { color: var(--muted); font-size: 0.85rem; }
+.track__ship-icon {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: rgba(214, 255, 117, 0.12);
+  color: var(--lime);
+  flex-shrink: 0;
+}
+
+.track__events {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin: 0;
+  padding: 0 0 0 18px;
+  border-left: 2px solid var(--line);
+  list-style: none;
+}
+.track__events li { position: relative; display: flex; flex-direction: column; gap: 2px; }
+.track__events li::before {
+  content: "";
+  position: absolute;
+  top: 6px;
+  left: -24px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--line);
+}
+.track__events li:first-child::before { background: var(--lime); box-shadow: 0 0 10px rgba(214, 255, 117, 0.7); }
+.track__events li:first-child strong { color: var(--lime); }
+.track__events span { color: var(--muted); font-size: 0.85rem; }
+.track__courier { align-self: flex-start; display: inline-flex; align-items: center; gap: 8px; padding: 11px 18px; font-size: 0.9rem; }
+
+.track__waiting,
+.track__cancelled {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 18px 0 0;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: rgba(214, 255, 117, 0.07);
+  color: var(--muted);
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+.track__waiting svg { color: var(--lime); flex-shrink: 0; margin-top: 2px; }
+.track__cancelled { background: rgba(255, 140, 120, 0.08); }
+.track__cancelled svg { color: #ff8c78; flex-shrink: 0; margin-top: 2px; }
+
+.track__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  margin-top: 18px;
+  padding-bottom: 4px;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+.track__meta p { display: inline-flex; align-items: center; gap: 7px; margin: 0; }
+
+.track .result__actions button { font: inherit; cursor: pointer; background: none; }
+
+@media (max-width: 560px) {
+  .track__form { padding: 20px; }
+  .track__ship { padding: 14px; }
+}

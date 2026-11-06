@@ -17,6 +17,7 @@ import CareInstructions from "./pages/CareInstructions";
 import Cart from "./pages/cart";
 import Checkout from "./pages/Checkout";
 import OrderResult from "./pages/OrderResult";
+import TrackOrder from "./pages/TrackOrder";
 
 import AdminLogin from "./admin/AdminLogin";
 import AdminLayout from "./admin/AdminLayout";
@@ -116,6 +117,8 @@ export default function App() {
           {/* ORDER RESULTS */}
           <Route path="/order-success" element={<OrderResult success />} />
           <Route path="/order-failed" element={<OrderResult />} />
+                    {/* TRACK ORDER */}
+          <Route path="/track" element={<TrackOrder />} />
 
           {/* PROFILE */}
           <Route

@@ -41,6 +41,7 @@ app.use("/api/products", require("./routes/products"));
 app.use("/api/orders", require("./routes/orders"));
 app.use("/api/admin", require("./routes/admin"));
 app.get("/api/health", (req, res) => res.json({ status: "ok" }));
+app.use("/api/delivery", require("./routes/delivery"));
 app.use("/api", (req, res) => res.status(404).json({ message: "Not found" }));
 app.use("/api/pincode", require("./routes/pincode"));
 

@@ -105,6 +105,13 @@ export default function Navbar() {
           >
             FAQs
           </Link>
+                    <Link
+            to="/track"
+            className={`navbar__link ${isActive("/track") ? "active" : ""}`}
+            onClick={closeMenu}
+          >
+            Track Order
+          </Link>
 
           {/* SEPARATE CUSTOMER REVIEWS PAGE */}
           <Link

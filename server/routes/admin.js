@@ -10,6 +10,7 @@ const requireAdmin = require("../middleware/requireAdmin");
 const Order = require("../models/Order");
 const Product = require("../models/Product");
 const Subscriber = require("../models/Subscriber");
+const shiprocket = require("../services/shiprocket");
 
 const router = express.Router();
 
@@ -178,6 +179,105 @@ router.get("/notifications", async (req, res) => {
   res.json({ unread, items });
 });
 
+// ---------- shipping (Shiprocket) ----------
+
+// POST /api/admin/orders/:id/ship
+// Creates the order in Shiprocket, assigns a courier + AWB, books pickup and makes the label.
+// Safe to click again: it continues from whichever step failed last time.
+router.post("/orders/:id/ship", async (req, res) => {
+  if (!mongoose.isValidObjectId(req.params.id)) return res.status(404).json({ message: "Order not found" });
+  const order = await Order.findById(req.params.id);
+  if (!order) return res.status(404).json({ message: "Order not found" });
+  if (!["paid", "confirmed", "shipped"].includes(order.status)) {
+    return res.status(400).json({ message: "Only paid or COD-confirmed orders can be shipped." });
+  }
+  if (!shiprocket.isConfigured()) {
+    return res.status(400).json({ message: "Shiprocket isn't set up yet — add SHIPROCKET_EMAIL and SHIPROCKET_PASSWORD to the server's environment." });
+  }
+
+  order.shipping = order.shipping || {};
+  const ship = order.shipping;
+
+  try {
+    // 1. Create the order in Shiprocket (once)
+    if (!ship.shipmentId) {
+      const created = await shiprocket.createOrder(order);
+      if (!created.shipment_id) throw new Error(`Shiprocket: ${created.message || "order not created"}`);
+      ship.srOrderId = String(created.order_id);
+      ship.shipmentId = String(created.shipment_id);
+      ship.status = created.status || "NEW";
+      await order.save();
+    }
+
+    // 2. Assign courier + AWB (tracking number)
+    if (!ship.awb) {
+      const awb = await shiprocket.assignAwb(ship.shipmentId);
+      const data = awb?.response?.data || {};
+      if (!data.awb_code) {
+        throw new Error(`Shiprocket couldn't assign a courier: ${data.awb_assign_error || awb.message || "no courier available"}`);
+      }
+      ship.awb = data.awb_code;
+      ship.courier = data.courier_name || "";
+      ship.trackUrl = shiprocket.trackingUrl(ship.awb);
+      ship.status = "AWB ASSIGNED";
+      await order.save();
+    }
+
+    // 3. Book the pickup
+    if (!ship.pickupDate) {
+      const pickup = await shiprocket.generatePickup(ship.shipmentId).catch((e) => ({ error: e.message }));
+      ship.pickupDate = pickup?.response?.pickup_scheduled_date || (pickup?.error ? "" : "requested");
+      if (pickup?.error) ship.lastError = pickup.error;
+      if (ship.pickupDate) ship.status = "PICKUP SCHEDULED";
+    }
+
+    // 4. Shipping label (PDF to print and stick on the box)
+    if (!ship.labelUrl) {
+      const label = await shiprocket.generateLabel(ship.shipmentId).catch(() => null);
+      if (label?.label_url) ship.labelUrl = label.label_url;
+    }
+
+    ship.shippedAt = ship.shippedAt || new Date();
+    if (ship.pickupDate) ship.lastError = ""; // everything went through
+    order.markModified("shipping");
+    await order.save();
+    res.json(order);
+  } catch (err) {
+    ship.lastError = err.message;
+    order.markModified("shipping");
+    await order.save().catch(() => {});
+    res.status(502).json({ message: err.message });
+  }
+});
+
+// POST /api/admin/orders/:id/tracking — fetch the latest tracking from Shiprocket
+router.post("/orders/:id/tracking", async (req, res) => {
+  if (!mongoose.isValidObjectId(req.params.id)) return res.status(404).json({ message: "Order not found" });
+  const order = await Order.findById(req.params.id);
+  if (!order?.shipping?.awb) return res.status(400).json({ message: "This order has no tracking number yet." });
+
+  try {
+    const data = await shiprocket.trackAwb(order.shipping.awb);
+    const t = data?.tracking_data || {};
+    const current = t.shipment_track?.[0] || {};
+    if (current.current_status) order.shipping.status = current.current_status;
+    if (t.etd || current.edd) order.shipping.etd = t.etd || current.edd;
+    if (t.track_url) order.shipping.trackUrl = t.track_url;
+    if (Array.isArray(t.shipment_track_activities)) {
+      order.shipping.events = t.shipment_track_activities.slice(0, 15).map((e) => ({
+        date: e.date, status: e.activity || e["sr-status-label"] || e.status, location: e.location,
+      }));
+    }
+    const mapped = shiprocket.mapStatus(order.shipping.status);
+    if (mapped && order.status !== "cancelled" && order.status !== "delivered") order.status = mapped;
+    order.markModified("shipping");
+    await order.save();
+    res.json(order);
+  } catch (err) {
+    res.status(502).json({ message: err.message });
+  }
+});
+
 // POST /api/admin/notifications/read-all
 router.post("/notifications/read-all", async (req, res) => {
   await Order.updateMany({ seenByAdmin: false }, { seenByAdmin: true });
@@ -207,6 +307,17 @@ router.patch("/orders/:id", async (req, res) => {
     for (const item of order.items) {
       await Product.updateOne({ _id: item.product }, { $inc: { stock: -item.quantity } });
     }
+  }
+
+  // Cancelled here -> cancel the Shiprocket shipment too (best effort; can't cancel once picked up)
+  if (status === "cancelled" && order.shipping?.srOrderId && shiprocket.isConfigured()) {
+    try {
+      await shiprocket.cancelOrders([order.shipping.srOrderId]);
+      order.shipping.status = "CANCELED";
+    } catch (err) {
+      order.shipping.lastError = `Couldn't cancel in Shiprocket: ${err.message}`;
+    }
+    order.markModified("shipping");
   }
 
   order.status = status;

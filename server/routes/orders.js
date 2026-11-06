@@ -5,6 +5,8 @@ const Razorpay = require("razorpay");
 const Product = require("../models/Product");
 const Order = require("../models/Order");
 const { priceOrder } = require("../config/pricing");
+const rateLimit = require("express-rate-limit");
+const shiprocket = require("../services/shiprocket");
 
 const router = express.Router();
 
@@ -192,6 +194,83 @@ router.get("/payment-callback", async (req, res) => {
   res.redirect(`${process.env.CLIENT_URL}/order-success?order=${razorpay_payment_link_reference_id}`);
 });
 
+// ---------- Track your order (public) ----------
+// Customers look up an order with its number (#E05E1D) + the mobile number used at checkout.
+
+const trackLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 30, // stops people guessing order numbers
+  message: { message: "Too many tries. Please wait a few minutes and try again." },
+});
+
+const TRACK_REFRESH_MS = 15 * 60 * 1000; // ask Shiprocket for fresh tracking at most every 15 min per order
+
+// POST /api/orders/track  { order: "E05E1D", phone: "9324556356" }
+router.post("/track", trackLimiter, async (req, res) => {
+  const code = String(req.body?.order || "").trim().replace(/^#/, "").toLowerCase();
+  const phone = String(req.body?.phone || "").replace(/\D/g, "").replace(/^(91|0)(?=\d{10}$)/, "");
+  if (!/^[0-9a-f]{6,24}$/.test(code) || !/^[6-9]\d{9}$/.test(phone)) {
+    return res.status(400).json({ message: "Enter your order number (like E05E1D) and the mobile number you used at checkout." });
+  }
+
+  // Order number = last 6 characters of the order id (what we show customers as #E05E1D)
+  const order = await Order.findOne({
+    "customer.phone": phone,
+    status: { $ne: "pending" },
+    $expr: { $regexMatch: { input: { $toString: "$_id" }, regex: `${code}$` } },
+  })
+    .sort({ createdAt: -1 })
+    .populate("items.product", "images");
+
+  if (!order) {
+    return res.status(404).json({ message: "We couldn't find that order. Check the order number and mobile number." });
+  }
+
+  // Fresh tracking from Shiprocket (cached for 15 minutes)
+  const sh = order.shipping;
+  if (sh?.awb && shiprocket.isConfigured() && (!sh.syncedAt || Date.now() - sh.syncedAt > TRACK_REFRESH_MS)) {
+    try {
+      const t = (await shiprocket.trackAwb(sh.awb))?.tracking_data || {};
+      const current = t.shipment_track?.[0] || {};
+      if (current.current_status) sh.status = current.current_status;
+      if (t.etd || current.edd) sh.etd = t.etd || current.edd;
+      if (t.track_url) sh.trackUrl = t.track_url;
+      if (Array.isArray(t.shipment_track_activities)) {
+        sh.events = t.shipment_track_activities.slice(0, 15).map((e) => ({
+          date: e.date, status: e.activity || e["sr-status-label"] || e.status, location: e.location,
+        }));
+      }
+      const mapped = shiprocket.mapStatus(sh.status);
+      if (mapped && order.status !== "cancelled" && order.status !== "delivered") order.status = mapped;
+    } catch (err) {
+      console.warn("Tracking refresh failed:", err.message);
+    }
+    sh.syncedAt = new Date();
+    order.markModified("shipping");
+    await order.save();
+  }
+
+  // Only what the customer needs — no street address or email in the response
+  res.json({
+    _id: order._id,
+    status: order.status,
+    paymentMethod: order.paymentMethod,
+    amount: order.amount,
+    subtotal: order.subtotal,
+    discount: order.discount,
+    delivery: order.delivery,
+    createdAt: order.createdAt,
+    placedAt: order.placedAt,
+    firstName: order.customer.name.split(" ")[0],
+    shipTo: `${order.shippingAddress.city}, ${order.shippingAddress.state} – ${order.shippingAddress.pincode}`,
+    items: order.items.map((i) => ({ name: i.name, quantity: i.quantity, price: i.price, image: i.product?.images?.[0] || "" })),
+    shipping: sh?.awb
+      ? { awb: sh.awb, courier: sh.courier, trackUrl: sh.trackUrl, status: sh.status, etd: sh.etd, events: sh.events || [] }
+      : null,
+  });
+});
+
+
 // GET /api/orders/:id/status — the checkout page polls this while showing the QR
 router.get("/:id/status", async (req, res) => {
   if (!mongoose.isValidObjectId(req.params.id)) return res.status(404).json({ message: "Order not found" });
@@ -211,7 +290,7 @@ router.get("/:id/status", async (req, res) => {
 router.get("/:id", async (req, res) => {
   if (!mongoose.isValidObjectId(req.params.id)) return res.status(404).json({ message: "Order not found" });
   const order = await Order.findById(req.params.id)
-    .select("items amount subtotal discount delivery currency status paymentMethod createdAt placedAt")
+       .select("items amount subtotal discount delivery currency status paymentMethod createdAt placedAt shipping.awb shipping.courier shipping.trackUrl shipping.status shipping.etd")
     .populate("items.product", "images");
   if (!order) return res.status(404).json({ message: "Order not found" });
   res.json(order);

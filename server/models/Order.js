@@ -78,6 +78,22 @@ const orderSchema = new mongoose.Schema(
     razorpayPaymentId: String,
     placedAt: { type: Date, index: true }, // when the order became real (UPI paid / COD placed)
     seenByAdmin: Boolean, // false = shows as a new-order notification in the admin panel
+        // Shiprocket shipment (filled in when you click "Ship with Shiprocket" in the admin panel)
+    shipping: {
+      srOrderId: String, // Shiprocket's order id
+      shipmentId: String,
+      awb: String, // tracking number
+      courier: String,
+      labelUrl: String,
+      trackUrl: String,
+      status: String, // latest status from Shiprocket, e.g. "IN TRANSIT"
+      etd: String, // courier's expected delivery date
+      pickupDate: String,
+      shippedAt: Date,
+      lastError: String,
+      syncedAt: Date, // last time tracking was refreshed from Shiprocket
+      events: [{ date: String, status: String, location: String, _id: false }],
+    },
   },
   { timestamps: true }
 );
