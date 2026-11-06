@@ -30,6 +30,7 @@ const links = [
   { name: "Care Guide", path: "/care-instructions" },
   { name: "FAQs", path: "/faqs" },
   { name: "Reviews", path: "/customer-reviews" },
+  { name: "Track Order", path: "/track" },
 ];
 
 export default function Navbar() {
