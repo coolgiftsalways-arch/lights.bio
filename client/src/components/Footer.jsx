@@ -1,9 +1,13 @@
 import { Link } from "react-router-dom";
-import { Leaf, MapPin, ArrowUpRight } from "lucide-react";
+import { Leaf, MapPin, ArrowUpRight, Mail, MessageCircle } from "lucide-react";
 
 import "../Style/Footer.css";
 
 export default function Footer() {
+  // Replace with your WhatsApp business number.
+  // Include country code 91, without + or spaces.
+  const whatsappNumber = "91XXXXXXXXXX";
+
   return (
     <footer className="footer" id="footer">
       <div className="footer__glow"></div>
@@ -76,10 +80,10 @@ export default function Footer() {
             <div className="footer__socials">
               {/* INSTAGRAM */}
               <a
-                href="https://instagram.com"
+                href="https://www.instagram.com/light.bio?dlrf=a25vMjN2aHltZzE4"
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label="Instagram"
+                aria-label="Visit Light.bio on Instagram"
               >
                 <svg
                   viewBox="0 0 24 24"
@@ -106,10 +110,10 @@ export default function Footer() {
 
               {/* FACEBOOK */}
               <a
-                href="https://facebook.com"
+                href="https://www.facebook.com/share/1BKmFCkZH3/"
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label="Facebook"
+                aria-label="Visit Light.bio on Facebook"
               >
                 <svg
                   viewBox="0 0 24 24"
@@ -124,10 +128,10 @@ export default function Footer() {
 
               {/* YOUTUBE */}
               <a
-                href="https://youtube.com"
+                href="https://www.youtube.com/@light-bio"
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label="YouTube"
+                aria-label="Visit Light.bio on YouTube"
               >
                 <svg
                   viewBox="0 0 24 24"
@@ -148,11 +152,28 @@ export default function Footer() {
                   />
                 </svg>
               </a>
+
+              {/* WHATSAPP */}
+              <a
+                href={`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(
+                  "Hello lights.bio! I would like to know more about your plants.",
+                )}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Contact Light.bio on WhatsApp"
+              >
+                <MessageCircle size={21} strokeWidth={1.8} />
+              </a>
+
+              {/* GMAIL */}
+              <a href="mailto:hello@lights.bio" aria-label="Email Light.bio">
+                <Mail size={21} strokeWidth={1.8} />
+              </a>
             </div>
 
             <p className="footer__location">
               <MapPin size={17} />
-              Made for plant lovers everywhere
+              Made for plant lovers across India
             </p>
           </div>
 
@@ -194,7 +215,15 @@ export default function Footer() {
         {/* BOTTOM BAR */}
         <div className="footer__divider"></div>
 
-       
+        <div className="footer__bottom">
+          <p>© {new Date().getFullYear()} lights.bio. All rights reserved.</p>
+
+          <div className="footer__legal-links">
+            <Link to="/terms-and-conditions">Terms & Conditions</Link>
+
+            <Link to="/privacy-policy">Privacy Policy</Link>
+          </div>
+        </div>
       </div>
     </footer>
   );

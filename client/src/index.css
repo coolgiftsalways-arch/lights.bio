@@ -1,4 +1,7 @@
-/* GLOBAL RESET */
+/* =====================================
+   GLOBAL RESET
+===================================== */
+
 * {
      margin: 0;
      padding: 0;
@@ -23,7 +26,10 @@ body {
      min-height: 100vh;
 }
 
-/* LENIS */
+/* =====================================
+   LENIS SMOOTH SCROLL
+===================================== */
+
 html.lenis,
 html.lenis body {
      height: auto;
@@ -41,18 +47,54 @@ html.lenis body {
      overscroll-behavior: contain;
 }
 
-/* MAIN CONTENT */
+/* =====================================
+   NAVBAR SPACING
+===================================== */
+
+/* Desktop: ticker 32px + navbar 78px */
+
+body {
+     padding-top: 110px;
+}
+
+/* Mobile: ticker 32px + navbar 70px */
+
+@media (max-width: 900px) {
+     body {
+          padding-top: 102px;
+     }
+}
+
+/* =====================================
+   MOBILE MENU SCROLL LOCK
+===================================== */
+
+body.menu-is-open {
+     overflow: hidden;
+}
+
+/* =====================================
+   MAIN CONTENT
+===================================== */
+
 main {
      width: 100%;
      min-height: 100vh;
 }
 
-/* IMAGES */
+/* =====================================
+   IMAGES
+===================================== */
+
 img {
      max-width: 100%;
+     height: auto;
 }
 
-/* MOBILE */
+/* =====================================
+   MOBILE
+===================================== */
+
 @media (max-width: 768px) {
 
      html,

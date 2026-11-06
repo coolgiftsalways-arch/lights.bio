@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+
 import {
   ArrowDown,
   ArrowUpRight,
@@ -14,80 +15,89 @@ import {
 import Hero from "../components/Hero";
 import "../Style/Home.css";
 
+/* =========================================
+   IMAGE PATH HELPER
+========================================= */
+const homeImage = (filename) => `/Home/${encodeURIComponent(filename)}`;
+
 const categories = [
   {
-    name: "Indoor Plants",
-    subtitle: "Bring nature into your home",
+    name: "Glow Getter Mailbag",
+    subtitle: "Your Top Autumn Indoor Care Questions, Answered!",
     slug: "indoor-plants",
-    image: "https://images.unsplash.com/photo-1501004318641-b39e6451bec6?w=900",
+    image: homeImage("GlowGetterMailbag.png"),
   },
   {
-    name: "Outdoor Plants",
-    subtitle: "Make your outdoors greener",
-    slug: "outdoor-plants",
-    image: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=900",
+    name: "How to Photograph The Bioluminescent Glow",
+    subtitle: "Capture the magic of glowing flowers",
+    slug: "photograph-the-glow",
+    image: homeImage("HowtoPhotographthe.png"),
   },
   {
-    name: "Succulents",
-    subtitle: "Small plants, big personality",
-    slug: "succulents",
-    image: "https://images.unsplash.com/photo-1459411552884-841db9b3cc2a?w=900",
+    name: "Cozy Indoor Styling Ideas for Your Firefly Petunia",
+    subtitle: "Bring a little glow into your home",
+    slug: "cozy-indoor-styling",
+    image: homeImage("Cozy Indoor StylingIdeasforYourFirefly.png"),
   },
   {
-    name: "Flowering Plants",
-    subtitle: "A little colour every day",
-    slug: "flowering-plants",
-    image: "https://images.unsplash.com/photo-1490750967868-88aa4486c946?w=900",
+    name: "Bringing the Glow Indoors",
+    subtitle: "How to care for your plants indoors",
+    slug: "bringing-the-glow-indoors",
+    image: homeImage("BingingtheGlowIndoors.png"),
   },
   {
-    name: "Air Purifying",
-    subtitle: "Breathe a little easier",
-    slug: "air-purifying",
-    image: "https://images.unsplash.com/photo-1509423350716-97f9360b4e09?w=900",
+    name: "A Conversation with Jim Devereux",
+    subtitle: "Meet the people behind the plants",
+    slug: "jim-devereux-interview",
+    image: homeImage("ToAllBlogPostsAConversationwithGreenFuseBotanicalsCo-OwnerJimDevereux.png"),
   },
   {
-    name: "Rare Plants",
-    subtitle: "For the curious collectors",
-    slug: "rare-plants",
-    image: "https://images.unsplash.com/photo-1508022713622-df2d8fb7b4cd?w=900",
+    name: "Why the Newest Buds Glow the Brightest",
+    subtitle: "Discover the science behind the glow",
+    slug: "newest-buds-glow",
+    image: homeImage("WhytheNewestBudsGlowtheBrightest.png"),
   },
   {
-    name: "Plant Combos",
-    subtitle: "Perfectly paired greens",
-    slug: "plant-combos",
-    image: "https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=900",
+    name: "The Science of Spooky Season",
+    subtitle: "Explore the magic of bioluminescence",
+    slug: "science-of-spooky-season",
+    image: homeImage("TheScienceofSpookySeason.png"),
   },
   {
-    name: "Hanging Plants",
-    subtitle: "Let your greenery flow",
-    slug: "hanging-plants",
-    image: "https://images.unsplash.com/photo-1497250681960-ef046c08a56e?w=900",
+    name: "Why the Glow Transforms from Day to Night",
+    subtitle: "The beauty of nature after dark",
+    slug: "glow-day-to-night",
+    image: homeImage("WhytheGlowTransformsfromDaytoNight.png"),
   },
   {
-    name: "Plant Pots",
-    subtitle: "A home for every plant",
-    slug: "plant-pots",
-    image: "https://images.unsplash.com/photo-1578500494198-246f612d3b3d?w=900",
+    name: "The Firefly Petunia Is Strictly an Outdoor Plant",
+    subtitle: "Discover the truth about glowing petunias",
+    slug: "outdoor-plant-myth",
+    image: homeImage("TheFireflyPetuniaIsStrictlyanOutdoorPlant.png"),
   },
   {
-    name: "Garden Tools",
-    subtitle: "Everything to grow better",
-    slug: "garden-tools",
-    image: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=900",
+    name: "The Glow in Official Firefly Petunia Photos Is Enhanced",
+    subtitle: "The truth behind the glowing photographs",
+    slug: "glow-photos-enhanced",
+    image: homeImage("TheGlowintheOfficialFirefly.png"),
   },
   {
-    name: "Plant Care",
-    subtitle: "Keep your plants thriving",
-    slug: "plant-care",
-    image: "https://images.unsplash.com/photo-1599685315640-6ec1f7f8c3e1?w=900",
+    name: "The Glow Runs Out of Power After an Hour or Two",
+    subtitle: "Understanding the living glow",
+    slug: "glow-power",
+    image: homeImage("TheGlowRunsOutofPowerAfteranHourorTwo.png"),
   },
   {
-    name: "Seeds",
-    subtitle: "Start something beautiful",
-    slug: "seeds",
-    image: "https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?w=900",
+    name: "Glowing Petunias Rely on Blacklights and Chemical Sprays",
+    subtitle: "Separating facts from myths",
+    slug: "blacklights-and-sprays",
+    image: homeImage("GlowingPetuniasRelyonSpecialBlacklightsandChemicalSprays.png"),
   },
 ];
+
+/* =========================================
+   CUSTOMER REVIEWS
+========================================= */
 
 const reviews = [
   {
@@ -116,51 +126,17 @@ const reviews = [
   },
 ];
 
-const news = [
-  {
-    title: "The art of bringing nature indoors",
-    source: "THE GREEN JOURNAL",
-    image:
-      "https://images.unsplash.com/photo-1494438639946-1ebd1d20bf85?w=1200",
-  },
-  {
-    title: "Small spaces, greener living",
-    source: "MODERN LIVING",
-    image:
-      "https://images.unsplash.com/photo-1497250681960-ef046c08a56e?w=1200",
-  },
-  {
-    title: "Why every home needs a little green",
-    source: "BOTANICAL DAILY",
-    image:
-      "https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=1200",
-  },
-  {
-    title: "A fresh perspective on plant styling",
-    source: "DESIGN NOTES",
-    image:
-      "https://images.unsplash.com/photo-1501004318641-b39e6451bec6?w=1200",
-  },
-  {
-    title: "The beauty of slow gardening",
-    source: "GREEN CULTURE",
-    image:
-      "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=1200",
-  },
-  {
-    title: "Creating your own indoor jungle",
-    source: "THE PLANT EDIT",
-    image:
-      "https://images.unsplash.com/photo-1509423350716-97f9360b4e09?w=1200",
-  },
-];
+/* =========================================
+   HOME COMPONENT
+========================================= */
 
 export default function Home() {
   const [reviewIndex, setReviewIndex] = useState(0);
   const [paused, setPaused] = useState(false);
   const [selectedNews, setSelectedNews] = useState(null);
 
-  // SCROLL REVEAL ANIMATION
+  /* SCROLL ANIMATION */
+
   useEffect(() => {
     const elements = document.querySelectorAll(".reveal");
 
@@ -176,12 +152,15 @@ export default function Home() {
       { threshold: 0.15 },
     );
 
-    elements.forEach((element) => observer.observe(element));
+    elements.forEach((element) => {
+      observer.observe(element);
+    });
 
     return () => observer.disconnect();
   }, []);
 
-  // AUTOMATIC REVIEW SLIDER
+  /* REVIEW AUTOPLAY */
+
   useEffect(() => {
     if (paused) return;
 
@@ -191,6 +170,8 @@ export default function Home() {
 
     return () => clearInterval(interval);
   }, [paused]);
+
+  /* REVIEW CONTROLS */
 
   const previousReview = () => {
     setReviewIndex((current) =>
@@ -202,37 +183,60 @@ export default function Home() {
     setReviewIndex((current) => (current + 1) % reviews.length);
   };
 
+  /* IMAGE FALLBACK */
+
+  const handleImageError = (event, originalPath) => {
+    console.error("Image failed to load:", originalPath);
+
+    event.currentTarget.onerror = null;
+
+    event.currentTarget.src = homeImage("GlowGetterMailbag.png");
+  };
+
   return (
     <main className="home-page">
-      {/* HERO */}
+      {/* =====================================
+          HERO
+      ===================================== */}
+
       <Hero />
 
-      {/* INTRODUCTION */}
+      {/* =====================================
+          INTRODUCTION
+      ===================================== */}
+
       <section className="home-intro">
         <div className="intro-top reveal">
           <span className="eyebrow">
-            <Leaf size={14} /> A DIFFERENT WAY TO LIVE GREEN
+            <Leaf size={14} />
+            The Wonder of Living Light
           </span>
+
           <span className="intro-number">01 / OUR WORLD</span>
         </div>
 
         <div className="intro-content">
           <h1 className="intro-heading reveal">
-            Make room for
+            The World’s First
             <br />
-            <span>something natural.</span>
+            <span>Naturally Glowing Plants.</span>
           </h1>
 
           <div className="intro-bottom reveal">
-            <div>
-              <h2>More than just plants.</h2>
-              <h4>A little nature changes everything.</h4>
-            </div>
-
             <p>
-              Discover thoughtfully selected plants, beautiful essentials and
-              everything you need to create a greener space. Bring the outside
-              in and make every corner feel alive.
+              Light Bio™ brings the hidden wonders of the world into your hands
+              with the world’s first naturally glowing plants! Inspired by the
+              bioluminescence found in our oceans and forests, these
+              extraordinary plants glow with their own living energy. No
+              batteries, wires, or sprays.
+              <br />
+              <br />
+              Light Bio’s bioluminescent petunias offer a new way to witness the
+              vitality of nature! During the day, our petunias harvest and store
+              energy through photosynthesis. At night, the plants convert that
+              stored energy into a visible soft, steady glow that permeates the
+              entire plant, from its brightest new blooms to every leaf and
+              stem.
             </p>
           </div>
 
@@ -243,31 +247,39 @@ export default function Home() {
         </div>
       </section>
 
-      {/* CATEGORIES */}
+      {/* =====================================
+          BLOG SECTION
+      ===================================== */}
+
       <section className="category-section">
         <div className="section-heading reveal">
           <div>
-            <span className="eyebrow">02 / FIND YOUR GREEN</span>
+            <span className="eyebrow">02 / OUR BLOGS</span>
+
             <h2>
-              Explore our world<span>.</span>
+              What's Happening<span>.</span>
             </h2>
           </div>
-
-          <p>
-            From little leafy friends to statement plants, find something that
-            feels like you.
-          </p>
         </div>
+
+        {/* BLOG GRID */}
 
         <div className="category-grid">
           {categories.map((category, index) => (
             <Link
-              to={`/products?category=${category.slug}`}
+              to={`/blogs/${category.slug}`}
               className="category-card reveal"
               key={category.slug}
             >
+              {/* IMAGE */}
+
               <div className="category-image-wrap">
-                <img src={category.image} alt={category.name} loading="lazy" />
+                <img
+                  src={category.image}
+                  alt={category.name}
+                  loading="lazy"
+                  onError={(event) => handleImageError(event, category.image)}
+                />
 
                 <span className="category-index">
                   {String(index + 1).padStart(2, "0")}
@@ -278,9 +290,12 @@ export default function Home() {
                 </span>
               </div>
 
+              {/* CONTENT */}
+
               <div className="category-info">
                 <div>
                   <h4>{category.name}</h4>
+
                   <p>{category.subtitle}</p>
                 </div>
 
@@ -289,13 +304,24 @@ export default function Home() {
             </Link>
           ))}
         </div>
+
+        <div className="blogs-view-all reveal">
+          <Link to="/blogs">
+            VIEW ALL
+            <ArrowUpRight size={17} />
+          </Link>
+        </div>
       </section>
 
-      {/* CUSTOMER REVIEWS */}
+      {/* =====================================
+          CUSTOMER REVIEWS
+      ===================================== */}
+
       <section className="review-section" id="reviews">
         <div className="review-header reveal">
           <div>
             <span className="eyebrow">03 / KIND WORDS</span>
+
             <h2>
               What Our Customers Are Saying<span>.</span>
             </h2>
@@ -312,6 +338,8 @@ export default function Home() {
           </div>
         </div>
 
+        {/* REVIEW SLIDER */}
+
         <div
           className="review-slider reveal"
           onMouseEnter={() => setPaused(true)}
@@ -321,7 +349,9 @@ export default function Home() {
         >
           <div
             className="review-track"
-            style={{ transform: `translateX(-${reviewIndex * 100}%)` }}
+            style={{
+              transform: `translateX(-${reviewIndex * 100}%)`,
+            }}
           >
             {reviews.map((review) => (
               <article className="review-card" key={review.name}>
@@ -344,6 +374,8 @@ export default function Home() {
           </div>
         </div>
 
+        {/* REVIEW DOTS */}
+
         <div className="review-pagination">
           {reviews.map((review, index) => (
             <button
@@ -356,57 +388,10 @@ export default function Home() {
         </div>
       </section>
 
-      {/* NEWS */}
-      <section className="news-section">
-        <div className="section-heading reveal">
-          <div>
-            <span className="eyebrow">04 / PRESS & STORIES</span>
-            <h2>
-              Light Bio in the News<span>.</span>
-            </h2>
-          </div>
+      {/* =====================================
+          NEWS MODAL
+      ===================================== */}
 
-          <p>
-            Stories, inspiration and conversations celebrating a greener way of
-            living.
-          </p>
-        </div>
-
-        <div className="news-grid">
-          {news.map((item, index) => (
-            <article className="news-card reveal" key={item.title}>
-              <button
-                className="news-image-button"
-                onClick={() => setSelectedNews(item)}
-                aria-label={`View ${item.title}`}
-              >
-                <img src={item.image} alt={item.title} loading="lazy" />
-
-                <span className="news-image-icon">
-                  <ArrowUpRight size={22} />
-                </span>
-              </button>
-
-              <div className="news-info">
-                <span>
-                  {item.source} / {String(index + 1).padStart(2, "0")}
-                </span>
-
-                <h4>{item.title}</h4>
-
-                <button
-                  className="news-read"
-                  onClick={() => setSelectedNews(item)}
-                >
-                  VIEW STORY <ArrowUpRight size={15} />
-                </button>
-              </div>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      {/* NEWS IMAGE PREVIEW */}
       {selectedNews && (
         <div className="news-modal" onClick={() => setSelectedNews(null)}>
           <div
@@ -416,7 +401,7 @@ export default function Home() {
             <button
               className="news-modal-close"
               onClick={() => setSelectedNews(null)}
-              aria-label="Close image preview"
+              aria-label="Close modal"
             >
               <X size={23} />
             </button>
@@ -426,16 +411,11 @@ export default function Home() {
             <div className="news-modal-bottom">
               <div>
                 <span>{selectedNews.source}</span>
+
                 <h3>{selectedNews.title}</h3>
               </div>
 
-              <a
-                href={selectedNews.image}
-                download="light-bio-news-image.jpg"
-                target="_blank"
-                rel="noreferrer"
-                className="news-download"
-              >
+              <a href={selectedNews.image} download className="news-download">
                 <Download size={17} />
                 Download
               </a>

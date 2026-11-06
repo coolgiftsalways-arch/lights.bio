@@ -130,16 +130,7 @@ export default function Hero() {
           Discover plants that make every space feel alive.
         </p>
 
-        <div className="hero-actions">
-          <a href="/shop" className="hero-primary-btn">
-            Discover the collection
-            <ArrowDownRight size={15} />
-          </a>
-
-          <a href="#story" className="hero-secondary-btn">
-            Our philosophy
-          </a>
-        </div>
+       
       </section>
 
       {/* DAY LABEL */}

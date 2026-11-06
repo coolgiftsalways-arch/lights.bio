@@ -1,13 +1,18 @@
 import { useLayoutEffect, useRef } from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
+
 import Lenis from "lenis";
 import "lenis/dist/lenis.css";
+
 import "./index.css";
 
+// COMPONENTS
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 
+// MAIN PAGES
 import Home from "./pages/Home";
+import Blogs from "./pages/Blogs";
 import Products from "./components/Products";
 import ProductDetails from "./components/ProductDetails";
 import FAQs from "./pages/FAQs";
@@ -19,6 +24,11 @@ import Checkout from "./pages/Checkout";
 import OrderResult from "./pages/OrderResult";
 import TrackOrder from "./pages/TrackOrder";
 
+// LEGAL PAGES
+import TermsConditions from "./pages/TermsConditions";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+
+// ADMIN PAGES
 import AdminLogin from "./admin/AdminLogin";
 import AdminLayout from "./admin/AdminLayout";
 import Dashboard from "./admin/Dashboard";
@@ -32,7 +42,10 @@ export default function App() {
 
   const isAdmin = location.pathname.startsWith("/admin");
 
+  // =====================================
   // LENIS SMOOTH SCROLL
+  // =====================================
+
   useLayoutEffect(() => {
     const lenis = new Lenis({
       duration: 1.2,
@@ -50,7 +63,10 @@ export default function App() {
     };
   }, []);
 
+  // =====================================
   // PAGE AND HASH SCROLL
+  // =====================================
+
   useLayoutEffect(() => {
     const lenis = lenisRef.current;
 
@@ -59,11 +75,16 @@ export default function App() {
     let frame1;
     let frame2;
 
+    // Scroll to top when changing pages
     if (!location.hash) {
-      lenis.scrollTo(0, { immediate: true });
+      lenis.scrollTo(0, {
+        immediate: true,
+      });
+
       return;
     }
 
+    // Scroll to a specific section
     const sectionId = decodeURIComponent(location.hash.substring(1));
 
     frame1 = requestAnimationFrame(() => {
@@ -85,17 +106,28 @@ export default function App() {
     };
   }, [location.pathname, location.hash]);
 
+  // =====================================
+  // WEBSITE
+  // =====================================
+
   return (
     <>
+      {/* NAVBAR */}
       {!isAdmin && <Navbar />}
 
+      {/* MAIN CONTENT */}
       <main>
         <Routes>
           {/* HOME */}
           <Route path="/" element={<Home />} />
 
+          {/* BLOGS */}
+          <Route path="/blogs" element={<Blogs />} />
+          <Route path="/blogs/:slug" element={<Blogs />} />
+
           {/* PRODUCTS */}
           <Route path="/products" element={<Products />} />
+
           <Route path="/product/:id" element={<ProductDetails />} />
 
           {/* FAQ */}
@@ -106,7 +138,13 @@ export default function App() {
 
           {/* OTHER PAGES */}
           <Route path="/unboxing" element={<Unboxing />} />
+
           <Route path="/care-instructions" element={<CareInstructions />} />
+
+          {/* LEGAL PAGES */}
+          <Route path="/terms-and-conditions" element={<TermsConditions />} />
+
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
 
           {/* CART */}
           <Route path="/cart" element={<Cart />} />
@@ -116,6 +154,7 @@ export default function App() {
 
           {/* ORDER RESULTS */}
           <Route path="/order-success" element={<OrderResult success />} />
+
           <Route path="/order-failed" element={<OrderResult />} />
                     {/* TRACK ORDER */}
           <Route path="/track" element={<TrackOrder />} />
@@ -137,8 +176,11 @@ export default function App() {
           {/* ADMIN DASHBOARD */}
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<Dashboard />} />
+
             <Route path="orders" element={<AdminOrders />} />
+
             <Route path="products" element={<AdminProducts />} />
+
             <Route path="subscribers" element={<Subscribers />} />
           </Route>
 
@@ -147,6 +189,7 @@ export default function App() {
         </Routes>
       </main>
 
+      {/* FOOTER */}
       {!isAdmin && <Footer />}
     </>
   );
