@@ -14,7 +14,7 @@ import FAQs from "./pages/FAQs";
 import CustomerReviews from "./pages/CustomerReviews";
 import Unboxing from "./pages/Unboxing";
 import CareInstructions from "./pages/CareInstructions";
-import Cart from "./pages/cart";
+import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
 import OrderResult from "./pages/OrderResult";
 import TrackOrder from "./pages/TrackOrder";
