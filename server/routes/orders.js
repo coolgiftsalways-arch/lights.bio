@@ -7,6 +7,7 @@ const Order = require("../models/Order");
 const { priceOrder } = require("../config/pricing");
 const rateLimit = require("express-rate-limit");
 const shiprocket = require("../services/shiprocket");
+const { sendOrderConfirmation } = require("../services/mailer");
 
 const router = express.Router();
 
@@ -45,6 +46,9 @@ async function markPaid(orderId, paymentId) {
 
   const outOfStock = await reserveStock(order.items);
   if (outOfStock) console.warn(`Stock ran out for ${outOfStock.name} on PAID order ${order._id} — handle manually.`);
+
+  // Order confirmation email (runs in the background; never blocks or breaks the order)
+  sendOrderConfirmation(order);
 
   // Stop the customer paying twice through the other option (best effort)
   if (order.razorpayQrId) razorpay.qrCode.close(order.razorpayQrId).catch(() => {});
@@ -119,6 +123,7 @@ router.post("/checkout", async (req, res) => {
     order.placedAt = new Date();
     order.seenByAdmin = false;
     await order.save();
+    sendOrderConfirmation(order); // order confirmation email (background)
     return res.status(201).json({ orderId: order._id, paymentMethod, amount, subtotal, discount, delivery });
   }
 
@@ -228,7 +233,7 @@ router.post("/track", trackLimiter, async (req, res) => {
 
   // Fresh tracking from Shiprocket (cached for 15 minutes)
   const sh = order.shipping;
-   if (sh?.awb && sh.testMode !== "mock" && shiprocket.isConfigured() && (!sh.syncedAt || Date.now() - sh.syncedAt > TRACK_REFRESH_MS)) {
+  if (sh?.awb && sh.testMode !== "mock" && shiprocket.isConfigured() && (!sh.syncedAt || Date.now() - sh.syncedAt > TRACK_REFRESH_MS)) {
     try {
       const t = (await shiprocket.trackAwb(sh.awb))?.tracking_data || {};
       const current = t.shipment_track?.[0] || {};

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { Check, PackageCheck, Truck, Home, Search, MapPin, ExternalLink, XCircle, Smartphone, Banknote } from "lucide-react";
+import { Check, PackageCheck, Truck, Home, Search, MapPin, ExternalLink, XCircle, Smartphone, Banknote, CalendarDays, Leaf, MessageCircle, ShieldCheck } from "lucide-react";
 import { API, formatPrice, imageUrl } from "../cart";
 import { deliveryWindow } from "../pricing";
 import "../Style/OrderResult.css";
@@ -67,15 +67,32 @@ export default function TrackOrder() {
   // ---------- lookup form ----------
   if (!order) {
     return (
-      <section className="result track">
+      <section className="result track track--lookup">
         <div className="result__glow" />
-        <div className="result__inner">
-          <div className="result__badge"><Search size={36} strokeWidth={2.4} /></div>
-          <p className="result__eyebrow">Order tracking</p>
-          <h1 className="result__title">Track your <em>order</em></h1>
-          <p className="result__text">Enter your order number and the mobile number you used at checkout.</p>
+        <div className="track-look">
+          {/* left: intro */}
+          <div className="track-look__intro">
+            <span className="track-look__badge"><Search size={26} strokeWidth={2.4} /></span>
+            <p className="result__eyebrow">Order tracking</p>
+            <h1 className="result__title track-look__title">Track your <em>order</em></h1>
+            <p className="track-look__text">
+              Enter your order number and the mobile number you used at checkout to see where your plants are.
+            </p>
 
-          <form className="track__form" onSubmit={submit} noValidate>
+            <ol className="track-look__steps">
+              <li><span><Check size={16} /></span><div><strong>Confirmed</strong><small>We've received your order</small></div></li>
+              <li><span><PackageCheck size={16} /></span><div><strong>Packed with care</strong><small>Plants prepared for travel</small></div></li>
+              <li><span><Truck size={16} /></span><div><strong>On its way</strong><small>Live courier tracking</small></div></li>
+            </ol>
+          </div>
+
+          {/* right: form */}
+          <form className="track__form track-look__form" onSubmit={submit} noValidate>
+            <div className="track-look__form-head">
+              <strong>Find your order</strong>
+              <small>Takes less than 10 seconds</small>
+            </div>
+
             <label className="track__field">
               <span>Order number</span>
               <div className="track__prefix">
@@ -110,8 +127,20 @@ export default function TrackOrder() {
             <button className="rbtn rbtn--primary track__submit" disabled={loading}>
               {loading ? "Finding your order…" : "Track order"}
             </button>
-            <p className="track__hint">Your order number is on the confirmation page, e.g. <b>#E05E1D</b>.</p>
+            <p className="track__hint">
+              Your order number is in your confirmation email and on the order page, e.g. <b>#E05E1D</b>.
+            </p>
+            <a className="track__help track-look__help" href="https://wa.me/919324556356?text=Hi%2C%20I%20need%20help%20tracking%20my%20order" target="_blank" rel="noreferrer">
+              <MessageCircle size={15} /> Can't find it? Chat on WhatsApp
+            </a>
           </form>
+
+          {/* trust strip */}
+          <ul className="track-look__trust">
+            <li><span><Truck size={18} /></span><div><strong>Live courier tracking</strong><small>Updates from pickup to your door</small></div></li>
+            <li><span><Leaf size={18} /></span><div><strong>Plant-safe packaging</strong><small>Packed to travel without stress</small></div></li>
+            <li><span><ShieldCheck size={18} /></span><div><strong>Secure lookup</strong><small>Order number + mobile only</small></div></li>
+          </ul>
         </div>
       </section>
     );
@@ -128,17 +157,22 @@ export default function TrackOrder() {
     <section className={`result track ${cancelled ? "result--failed" : ""}`}>
       <div className="result__glow" />
       <div className="result__inner">
-        <p className="result__eyebrow">Order #{code}</p>
-        <h1 className="result__title">
-          Hi {order.firstName}, <em>{HEADLINE[order.status] || "here's your order"}</em>
+        <p className="track__chip">Order <b>#{code}</b></p>
+        <h1 className="result__title track__title">
+          <span className="track__hi">Hi {order.firstName},</span>
+          <em>{HEADLINE[order.status] || "here's your order"}</em>
         </h1>
         {!cancelled && order.status !== "delivered" && order.delivery?.minDays && (
-          <p className="result__text">
-            Estimated delivery: <strong>{order.shipping?.etd || deliveryWindow(order.delivery, placed)}</strong>
-          </p>
+          <div className="track__eta">
+            <CalendarDays size={18} />
+            <span>
+              <small>Estimated delivery</small>
+              <strong>{order.shipping?.etd || deliveryWindow(order.delivery, placed)}</strong>
+            </span>
+          </div>
         )}
 
-        <div className="receipt">
+        <div className="receipt track__card">
           {!cancelled && (
             <ol className="tracker track__tracker">
               {STEPS.map(({ label, icon: Icon }, i) => (
@@ -190,17 +224,23 @@ export default function TrackOrder() {
           )}
 
           <div className="track__meta">
-            <p><MapPin size={15} /> {order.shipTo}</p>
-            <p>
-              {isCod ? <Banknote size={15} /> : <Smartphone size={15} />}
-              {isCod ? `Cash on delivery · pay ${formatPrice(order.amount)}` : `Paid via UPI · ${formatPrice(order.amount)}`}
-            </p>
+            <div className="track__row">
+              <span className="track__row-icon"><MapPin size={16} /></span>
+              <span><small>Delivering to</small>{order.shipTo}</span>
+            </div>
+            <div className="track__row">
+              <span className="track__row-icon">{isCod ? <Banknote size={16} /> : <Smartphone size={16} />}</span>
+              <span>
+                <small>Payment</small>
+                {isCod ? `Cash on delivery · pay ${formatPrice(order.amount)} on arrival` : `Paid via UPI · ${formatPrice(order.amount)}`}
+              </span>
+            </div>
           </div>
 
           <ul className="receipt__items">
             {order.items.map((item, i) => (
               <li key={i}>
-                {item.image ? <img src={imageUrl(item.image)} alt="" /> : <span className="receipt__noimg" />}
+                {item.image ? <img src={imageUrl(item.image)} alt="" /> : <span className="receipt__noimg track__noimg"><Leaf size={20} /></span>}
                 <span className="receipt__name">
                   {item.name}
                   <small>Qty {item.quantity}</small>
@@ -209,14 +249,22 @@ export default function TrackOrder() {
               </li>
             ))}
           </ul>
+
+          <div className="track__total">
+            <span>{isCod ? "To pay on delivery" : "Total paid"}</span>
+            <strong>{formatPrice(order.amount)}</strong>
+          </div>
         </div>
 
-        <div className="result__actions">
+        <div className="result__actions track__actions">
+          <Link to="/products" className="rbtn rbtn--primary">Continue shopping</Link>
           <button className="rbtn rbtn--ghost" onClick={() => { setOrder(null); setForm({ order: "", phone: "" }); setParams({}); }}>
             Track another order
           </button>
-          <Link to="/products" className="rbtn rbtn--primary">Continue shopping</Link>
         </div>
+        <a className="track__help" href={`https://wa.me/919324556356?text=${encodeURIComponent(`Hi, I need help with order #${code}`)}`} target="_blank" rel="noreferrer">
+          <MessageCircle size={15} /> Need help with this order? Chat on WhatsApp
+        </a>
       </div>
     </section>
   );
