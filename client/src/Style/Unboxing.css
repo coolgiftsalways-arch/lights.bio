@@ -964,3 +964,55 @@
           transition: none !important;
      }
 }
+
+/* ---------- self-hosted unboxing video ---------- */
+.unbox-video__player {
+     position: absolute;
+     inset: 0;
+     z-index: 1;
+     width: 100%;
+     height: 100%;
+     display: block;
+     object-fit: cover;
+     background: #080e09;
+}
+
+.unbox-video__sound {
+     position: absolute;
+     top: 22px;
+     right: 22px;
+     z-index: 4;
+     display: inline-flex;
+     align-items: center;
+     gap: 8px;
+     padding: 10px 16px;
+     border: 1px solid rgba(214, 255, 117, .35);
+     border-radius: 999px;
+     background: rgba(8, 14, 9, .65);
+     backdrop-filter: blur(8px);
+     color: #f3f1e8;
+     font: inherit;
+     font-size: 12px;
+     font-weight: 600;
+     letter-spacing: .04em;
+     cursor: pointer;
+     transition: border-color .2s ease, color .2s ease, transform .2s ease;
+}
+
+.unbox-video__sound:hover {
+     border-color: var(--ub-lime);
+     color: var(--ub-lime);
+     transform: translateY(-1px);
+}
+
+@media (max-width: 600px) {
+     .unbox-video__sound {
+          top: 12px;
+          right: 12px;
+          padding: 8px 12px;
+     }
+
+     .unbox-video__sound span {
+          display: none;
+     }
+}

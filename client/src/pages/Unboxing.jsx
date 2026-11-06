@@ -1,6 +1,5 @@
-
-import { useEffect, useRef } from "react";
-import { Leaf } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Leaf, Volume2, VolumeX } from "lucide-react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
@@ -43,6 +42,36 @@ const unboxingSteps = [
 
 export default function Unboxing() {
   const pageRef = useRef(null);
+  const videoRef = useRef(null);
+  const [muted, setMuted] = useState(true);
+
+  // Play the video while it's on screen, pause when the user scrolls away.
+  // (Browsers only allow autoplay when the video starts muted.)
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const tryPlay = () => video.play().catch(() => {});
+    tryPlay(); // start right away when the page opens
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) tryPlay();
+        else video.pause();
+      },
+      { threshold: 0.25 },
+    );
+    observer.observe(video);
+    return () => observer.disconnect();
+  }, []);
+
+  const toggleSound = () => {
+    const video = videoRef.current;
+    if (!video) return;
+    video.muted = !video.muted;
+    setMuted(video.muted);
+    if (!video.muted) video.play().catch(() => {});
+  };
 
   useEffect(() => {
     const page = pageRef.current;
@@ -50,7 +79,7 @@ export default function Unboxing() {
 
     const ctx = gsap.context(() => {
       const reduceMotion = window.matchMedia(
-        "(prefers-reduced-motion: reduce)"
+        "(prefers-reduced-motion: reduce)",
       ).matches;
 
       if (reduceMotion) return;
@@ -124,7 +153,7 @@ export default function Unboxing() {
             end: "center center",
             scrub: 1,
           },
-        }
+        },
       );
     }, page);
 
@@ -188,12 +217,27 @@ export default function Unboxing() {
         </div>
 
         <div className="unbox-video__frame">
-          <iframe
-            src="https://www.youtube.com/embed/VIDEO_ID"
-            title="Plant unboxing experience"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            allowFullScreen
+          <video
+            ref={videoRef}
+            className="unbox-video__player"
+            src="/unboxingvideo.mp4"
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="auto"
+            aria-label="Plant unboxing experience"
           />
+
+          <button
+            type="button"
+            className="unbox-video__sound"
+            onClick={toggleSound}
+            aria-label={muted ? "Turn sound on" : "Turn sound off"}
+          >
+            {muted ? <VolumeX size={18} /> : <Volume2 size={18} />}
+            <span>{muted ? "Tap for sound" : "Sound on"}</span>
+          </button>
 
           <span className="unbox-video__caption">
             PLANT COLLECTION — THE UNBOXING FILM
