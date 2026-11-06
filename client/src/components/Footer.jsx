@@ -3,11 +3,10 @@ import { Leaf, MapPin, ArrowUpRight, Mail, MessageCircle } from "lucide-react";
 
 import "../Style/Footer.css";
 
-export default function Footer() {
-  // Replace with your WhatsApp business number.
-  // Include country code 91, without + or spaces.
-  const whatsappNumber = "91XXXXXXXXXX";
+// Your WhatsApp chat link
+const WHATSAPP_URL = "https://wa.me/qr/SV6WNPSUYC6ZO1?s=v";
 
+export default function Footer() {
   return (
     <footer className="footer" id="footer">
       <div className="footer__glow"></div>
@@ -155,17 +154,15 @@ export default function Footer() {
 
               {/* WHATSAPP */}
               <a
-                href={`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(
-                  "Hello lights.bio! I would like to know more about your plants.",
-                )}`}
+                href={WHATSAPP_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label="Contact Light.bio on WhatsApp"
+                aria-label="Chat with Light.bio on WhatsApp"
               >
                 <MessageCircle size={21} strokeWidth={1.8} />
               </a>
 
-              {/* GMAIL */}
+              {/* EMAIL */}
               <a href="mailto:hello@lights.bio" aria-label="Email Light.bio">
                 <Mail size={21} strokeWidth={1.8} />
               </a>
@@ -173,7 +170,7 @@ export default function Footer() {
 
             <p className="footer__location">
               <MapPin size={17} />
-              Made for plant lovers across India
+              Sangam Plaza - 002 Vp road Bkc Bandra Mumbai
             </p>
           </div>
 
@@ -205,7 +202,11 @@ export default function Footer() {
             <h4>SUPPORT</h4>
             <Link to="/customer-reviews">Community Guidelines</Link>
             <a href="mailto:hello@lights.bio">Contact Us</a>
+            <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer">
+              WhatsApp Support
+            </a>
             <Link to="/cart">My Cart</Link>
+            <Link to="/track">Track Order</Link>
             <a href="mailto:hello@lights.bio">Order Support</a>
             <Link to="/shipping">Shipping Information</Link>
             <Link to="/refund">Returns & Refunds</Link>
