@@ -1,8 +1,13 @@
 import { Link } from "react-router-dom";
-import { Leaf, MapPin, ArrowUpRight } from "lucide-react";
+import { Leaf, MapPin, ArrowUpRight, Mail, MessageCircle } from "lucide-react";
+
 import "../Style/Footer.css";
 
 export default function Footer() {
+  // Replace with your WhatsApp business number.
+  // Include country code 91, without + or spaces.
+  const whatsappNumber = "91XXXXXXXXXX";
+
   return (
     <footer className="footer" id="footer">
       <div className="footer__glow"></div>
@@ -123,10 +128,10 @@ export default function Footer() {
 
               {/* YOUTUBE */}
               <a
-                href="https://www.youtube.com/"
+                href="https://www.youtube.com/@light-bio"
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label="YouTube"
+                aria-label="Visit Light.bio on YouTube"
               >
                 <svg
                   viewBox="0 0 24 24"
@@ -147,11 +152,28 @@ export default function Footer() {
                   />
                 </svg>
               </a>
+
+              {/* WHATSAPP */}
+              <a
+                href={`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(
+                  "Hello lights.bio! I would like to know more about your plants.",
+                )}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Contact Light.bio on WhatsApp"
+              >
+                <MessageCircle size={21} strokeWidth={1.8} />
+              </a>
+
+              {/* GMAIL */}
+              <a href="mailto:hello@lights.bio" aria-label="Email Light.bio">
+                <Mail size={21} strokeWidth={1.8} />
+              </a>
             </div>
 
             <p className="footer__location">
               <MapPin size={17} />
-              Made for plant lovers everywhere
+              Made for plant lovers across India
             </p>
           </div>
 

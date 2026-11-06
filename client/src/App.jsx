@@ -3,6 +3,7 @@ import { Routes, Route, useLocation } from "react-router-dom";
 
 import Lenis from "lenis";
 import "lenis/dist/lenis.css";
+
 import "./index.css";
 
 // COMPONENTS
@@ -40,7 +41,10 @@ export default function App() {
 
   const isAdmin = location.pathname.startsWith("/admin");
 
+  // =====================================
   // LENIS SMOOTH SCROLL
+  // =====================================
+
   useLayoutEffect(() => {
     const lenis = new Lenis({
       duration: 1.2,
@@ -58,7 +62,10 @@ export default function App() {
     };
   }, []);
 
+  // =====================================
   // PAGE AND HASH SCROLL
+  // =====================================
+
   useLayoutEffect(() => {
     const lenis = lenisRef.current;
 
@@ -67,11 +74,16 @@ export default function App() {
     let frame1;
     let frame2;
 
+    // Scroll to top when changing pages
     if (!location.hash) {
-      lenis.scrollTo(0, { immediate: true });
+      lenis.scrollTo(0, {
+        immediate: true,
+      });
+
       return;
     }
 
+    // Scroll to a specific section
     const sectionId = decodeURIComponent(location.hash.substring(1));
 
     frame1 = requestAnimationFrame(() => {
@@ -93,23 +105,28 @@ export default function App() {
     };
   }, [location.pathname, location.hash]);
 
+  // =====================================
+  // WEBSITE
+  // =====================================
+
   return (
     <>
+      {/* NAVBAR */}
       {!isAdmin && <Navbar />}
 
+      {/* MAIN CONTENT */}
       <main>
         <Routes>
           {/* HOME */}
           <Route path="/" element={<Home />} />
 
-          {/* BLOG LISTING */}
+          {/* BLOGS */}
           <Route path="/blogs" element={<Blogs />} />
-
-          {/* INDIVIDUAL BLOG ARTICLES */}
           <Route path="/blogs/:slug" element={<Blogs />} />
 
           {/* PRODUCTS */}
           <Route path="/products" element={<Products />} />
+
           <Route path="/product/:id" element={<ProductDetails />} />
 
           {/* FAQ */}
@@ -120,6 +137,7 @@ export default function App() {
 
           {/* OTHER PAGES */}
           <Route path="/unboxing" element={<Unboxing />} />
+
           <Route path="/care-instructions" element={<CareInstructions />} />
 
           {/* LEGAL PAGES */}
@@ -155,8 +173,11 @@ export default function App() {
           {/* ADMIN DASHBOARD */}
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<Dashboard />} />
+
             <Route path="orders" element={<AdminOrders />} />
+
             <Route path="products" element={<AdminProducts />} />
+
             <Route path="subscribers" element={<Subscribers />} />
           </Route>
 
@@ -165,6 +186,7 @@ export default function App() {
         </Routes>
       </main>
 
+      {/* FOOTER */}
       {!isAdmin && <Footer />}
     </>
   );
