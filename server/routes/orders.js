@@ -228,7 +228,7 @@ router.post("/track", trackLimiter, async (req, res) => {
 
   // Fresh tracking from Shiprocket (cached for 15 minutes)
   const sh = order.shipping;
-  if (sh?.awb && shiprocket.isConfigured() && (!sh.syncedAt || Date.now() - sh.syncedAt > TRACK_REFRESH_MS)) {
+   if (sh?.awb && sh.testMode !== "mock" && shiprocket.isConfigured() && (!sh.syncedAt || Date.now() - sh.syncedAt > TRACK_REFRESH_MS)) {
     try {
       const t = (await shiprocket.trackAwb(sh.awb))?.tracking_data || {};
       const current = t.shipment_track?.[0] || {};

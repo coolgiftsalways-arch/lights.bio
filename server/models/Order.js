@@ -92,6 +92,7 @@ const orderSchema = new mongoose.Schema(
       shippedAt: Date,
       lastError: String,
       syncedAt: Date, // last time tracking was refreshed from Shiprocket
+      testMode: String,
       events: [{ date: String, status: String, location: String, _id: false }],
     },
   },

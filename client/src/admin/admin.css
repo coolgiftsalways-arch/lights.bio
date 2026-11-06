@@ -638,3 +638,24 @@ a.stat:hover { border-color: var(--line-strong); transform: translateY(-2px); }
 .ship__events li:first-child strong { color: var(--lime); }
 .spin { animation: adm-spin 0.9s linear infinite; }
 @keyframes adm-spin { to { transform: rotate(360deg); } }
+
+/* ---------- Shiprocket shipping panel (order drawer) ---------- */
+.ship-panel h3 { display: flex; align-items: center; gap: 8px; }
+.ship-test {
+  margin: 0 0 12px; padding: 9px 12px; border-radius: 10px;
+  background: rgba(247, 178, 108, 0.12); color: var(--amber); font-size: 0.82rem; font-weight: 600;
+}
+.ship-grid {
+  display: grid; grid-template-columns: auto 1fr; gap: 6px 16px; margin: 0 0 12px; font-size: 0.88rem;
+}
+.ship-grid dt { color: var(--muted); }
+.ship-grid dd { margin: 0; overflow-wrap: anywhere; }
+.ship-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.ship-actions .abtn { display: inline-flex; align-items: center; gap: 7px; text-decoration: none; }
+.ship-events { list-style: none; margin: 14px 0 0; padding: 0 0 0 12px; border-left: 2px solid var(--line-strong); }
+.ship-events li { padding: 0 0 10px; }
+.ship-events strong { display: block; font-size: 0.85rem; font-weight: 600; }
+.ship-events small { color: var(--muted); font-size: 0.75rem; }
+@media (max-width: 560px) {
+  .ship-actions .abtn { flex: 1 1 100%; justify-content: center; }
+}

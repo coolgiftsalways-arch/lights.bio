@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Search, X, Phone, Mail, MapPin } from "lucide-react";
+import { Search, X, Phone, Mail, MapPin, Truck, RefreshCw, FileText, ExternalLink } from "lucide-react";
 import { adminFetch, formatDate, STATUS_META } from "./api";
 import { formatPrice, imageUrl } from "../cart";
 import StatusBadge from "./StatusBadge";
@@ -168,6 +168,8 @@ function OrderDrawer({ id, onClose, onChanged }) {
               {order.razorpayPaymentId && <p className="cell-sub">Razorpay payment: <span className="mono">{order.razorpayPaymentId}</span></p>}
             </div>
 
+            <ShippingSection order={order} setOrder={setOrder} onChanged={onChanged} />
+
             <div className="drawer__section">
               <h3>Customer</h3>
               <p className="cell-main">{order.customer.name}</p>
@@ -198,7 +200,7 @@ function OrderDrawer({ id, onClose, onChanged }) {
                   </li>
                 ))}
               </ul>
-                            {order.discount > 0 && (
+              {order.discount > 0 && (
                 <div className="drawer__line">
                   <span>Subtotal {formatPrice(order.subtotal)} · UPI discount</span>
                   <span>−{formatPrice(order.discount)}</span>
@@ -217,5 +219,97 @@ function OrderDrawer({ id, onClose, onChanged }) {
       </aside>
     </div>
     </Portal>
+  );
+}
+
+// ---------- Shiprocket shipping panel ----------
+const SHIPPABLE = ["paid", "confirmed", "shipped"];
+
+function ShippingSection({ order, setOrder, onChanged }) {
+  const [busy, setBusy] = useState("");
+  const [error, setError] = useState("");
+  const ship = order.shipping || {};
+  const shippable = SHIPPABLE.includes(order.status);
+  const isMock = ship.testMode === "mock";
+  const isCreateOnly = ship.testMode === "create_only";
+  const done = Boolean(ship.awb && ship.pickupDate && !ship.testMode);
+
+  const run = async (kind) => {
+    if (kind === "ship" && !window.confirm(
+      "Send this order to Shiprocket?\n\nIn LIVE mode this assigns a courier (charges your Shiprocket wallet) and books a pickup.\nIn TEST mode (SHIPROCKET_MODE=mock / create_only) nothing is booked."
+    )) return;
+    setBusy(kind);
+    setError("");
+    try {
+      const updated = await adminFetch(`/orders/${order._id}/${kind === "ship" ? "ship" : "tracking"}`, { method: "POST" });
+      setOrder((o) => ({ ...o, ...updated }));
+      onChanged();
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setBusy("");
+    }
+  };
+
+  return (
+    <div className="drawer__section ship-panel">
+      <h3><Truck size={15} /> Shipping</h3>
+
+      {(isMock || isCreateOnly) && (
+        <p className="ship-test">
+          {isMock ? "TEST shipment — nothing was sent to Shiprocket." : "TEST — order created in Shiprocket only. No courier or pickup booked."}
+        </p>
+      )}
+
+      {ship.shipmentId ? (
+        <dl className="ship-grid">
+          {ship.status && (<><dt>Status</dt><dd>{ship.status}</dd></>)}
+          {ship.courier && (<><dt>Courier</dt><dd>{ship.courier}</dd></>)}
+          {ship.awb && (<><dt>AWB</dt><dd className="mono">{ship.awb}</dd></>)}
+          {ship.pickupDate && (<><dt>Pickup</dt><dd>{ship.pickupDate}</dd></>)}
+          {ship.etd && (<><dt>Expected</dt><dd>{ship.etd}</dd></>)}
+          {ship.srOrderId && (<><dt>Shiprocket ID</dt><dd className="mono">{ship.srOrderId}</dd></>)}
+        </dl>
+      ) : (
+        <p className="adm-muted">
+          {shippable ? "Not sent to Shiprocket yet." : "Only Paid or COD-confirmed orders can be shipped."}
+        </p>
+      )}
+
+      {ship.lastError && <p className="adm-error">{ship.lastError}</p>}
+      {error && <p className="adm-error">{error}</p>}
+
+      <div className="ship-actions">
+        {shippable && !done && (
+          <button className="abtn abtn--primary" disabled={!!busy} onClick={() => run("ship")}>
+            <Truck size={15} />
+            {busy === "ship" ? "Sending…" : ship.shipmentId ? "Continue / retry shipping" : "Ship with Shiprocket"}
+          </button>
+        )}
+        {ship.awb && !isMock && (
+          <button className="abtn abtn--ghost" disabled={!!busy} onClick={() => run("track")}>
+            <RefreshCw size={15} /> {busy === "track" ? "Refreshing…" : "Refresh tracking"}
+          </button>
+        )}
+        {ship.labelUrl && (
+          <a className="abtn abtn--ghost" href={ship.labelUrl} target="_blank" rel="noreferrer">
+            <FileText size={15} /> Label
+          </a>
+        )}
+        {ship.trackUrl && (
+          <a className="abtn abtn--ghost" href={ship.trackUrl} target="_blank" rel="noreferrer">
+            <ExternalLink size={15} /> Track
+          </a>
+        )}
+      </div>
+
+      {Array.isArray(ship.events) && ship.events.length > 0 && (
+        <ul className="ship-events">
+          {ship.events.slice(0, 6).map((e, i) => (
+            <li key={i}><strong>{e.status}</strong><small>{[e.location, e.date].filter(Boolean).join(" · ")}</small></li>
+          ))}
+        </ul>
+      )}
+    </div>
   );
 }

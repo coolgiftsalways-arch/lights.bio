@@ -180,10 +180,15 @@ router.get("/notifications", async (req, res) => {
 });
 
 // ---------- shipping (Shiprocket) ----------
+// SHIPROCKET_MODE (server env):
+//   live        – default. Create order + assign courier/AWB + book pickup + label (charges wallet).
+//   create_only – only create the order in Shiprocket ("NEW"). No courier, no AWB, no pickup, no charge.
+//   mock        – don't call Shiprocket at all; fill in fake TEST data so you can test the admin/customer UI.
+const shipMode = () => {
+  const m = String(process.env.SHIPROCKET_MODE || "live").trim().toLowerCase();
+  return ["mock", "create_only"].includes(m) ? m : "live";
+};
 
-// POST /api/admin/orders/:id/ship
-// Creates the order in Shiprocket, assigns a courier + AWB, books pickup and makes the label.
-// Safe to click again: it continues from whichever step failed last time.
 router.post("/orders/:id/ship", async (req, res) => {
   if (!mongoose.isValidObjectId(req.params.id)) return res.status(404).json({ message: "Order not found" });
   const order = await Order.findById(req.params.id);
@@ -191,15 +196,43 @@ router.post("/orders/:id/ship", async (req, res) => {
   if (!["paid", "confirmed", "shipped"].includes(order.status)) {
     return res.status(400).json({ message: "Only paid or COD-confirmed orders can be shipped." });
   }
+
+  const mode = shipMode();
+
+  // ---------- MOCK: nothing is sent to Shiprocket ----------
+  if (mode === "mock") {
+    const tag = order._id.toString().slice(-6).toUpperCase();
+    order.shipping = {
+      testMode: "mock",
+      srOrderId: `TEST-${tag}`,
+      shipmentId: `TEST-${tag}`,
+      awb: `TESTAWB${tag}`,
+      courier: "TEST COURIER (not real)",
+      trackUrl: "",
+      labelUrl: "",
+      status: "TEST - NOT SENT TO SHIPROCKET",
+      pickupDate: "",
+      shippedAt: new Date(),
+      lastError: "",
+      events: [{ date: new Date().toISOString(), status: "Test shipment created (SHIPROCKET_MODE=mock)", location: "" }],
+    };
+    order.markModified("shipping");
+    await order.save();
+    return res.json(order);
+  }
+
   if (!shiprocket.isConfigured()) {
     return res.status(400).json({ message: "Shiprocket isn't set up yet — add SHIPROCKET_EMAIL and SHIPROCKET_PASSWORD to the server's environment." });
   }
+
+  // Leftover fake data from mock mode must not be treated as a real shipment
+  if (order.shipping?.testMode === "mock") order.shipping = {};
 
   order.shipping = order.shipping || {};
   const ship = order.shipping;
 
   try {
-    // 1. Create the order in Shiprocket (once)
+    // 1. Create the order in Shiprocket (once) — free, no courier involved yet
     if (!ship.shipmentId) {
       const created = await shiprocket.createOrder(order);
       if (!created.shipment_id) throw new Error(`Shiprocket: ${created.message || "order not created"}`);
@@ -209,7 +242,18 @@ router.post("/orders/:id/ship", async (req, res) => {
       await order.save();
     }
 
-    // 2. Assign courier + AWB (tracking number)
+    // ---------- CREATE_ONLY: stop before anything is charged or booked ----------
+    if (mode === "create_only") {
+      ship.testMode = "create_only";
+      ship.status = "NEW (test – no courier/pickup booked)";
+      ship.lastError = "";
+      order.markModified("shipping");
+      await order.save();
+      return res.json(order);
+    }
+    ship.testMode = undefined; // going live from here on
+
+    // 2. Assign courier + AWB (tracking number) — charges the Shiprocket wallet
     if (!ship.awb) {
       const awb = await shiprocket.assignAwb(ship.shipmentId);
       const data = awb?.response?.data || {};
@@ -255,6 +299,9 @@ router.post("/orders/:id/tracking", async (req, res) => {
   if (!mongoose.isValidObjectId(req.params.id)) return res.status(404).json({ message: "Order not found" });
   const order = await Order.findById(req.params.id);
   if (!order?.shipping?.awb) return res.status(400).json({ message: "This order has no tracking number yet." });
+
+    if (!order?.shipping?.awb) return res.status(400).json({ message: "This order has no tracking number yet." });
+  if (order.shipping.testMode === "mock") return res.status(400).json({ message: "This is a TEST shipment (mock mode) — there is no real tracking." });
 
   try {
     const data = await shiprocket.trackAwb(order.shipping.awb);
@@ -310,7 +357,7 @@ router.patch("/orders/:id", async (req, res) => {
   }
 
   // Cancelled here -> cancel the Shiprocket shipment too (best effort; can't cancel once picked up)
-  if (status === "cancelled" && order.shipping?.srOrderId && shiprocket.isConfigured()) {
+    if (status === "cancelled" && order.shipping?.srOrderId && order.shipping.testMode !== "mock" && shiprocket.isConfigured()) {
     try {
       await shiprocket.cancelOrders([order.shipping.srOrderId]);
       order.shipping.status = "CANCELED";
