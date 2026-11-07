@@ -129,6 +129,7 @@ router.post("/checkout", async (req, res) => {
 
   // ----- UPI: fixed-amount Razorpay payment link for this order -----
   const description = (
+    "lights.bio — " +
     orderItems.map((i) => `${i.name} x${i.quantity}`).join(", ") + (discount ? " (10% UPI discount applied)" : "")
   ).slice(0, 250);
 
@@ -144,6 +145,11 @@ router.post("/checkout", async (req, res) => {
       expire_by: Math.floor(Date.now() / 1000) + 60 * 60, // 1 hour
       callback_url: `${process.env.SERVER_URL}/api/orders/payment-callback`,
       callback_method: "get",
+      notes: {
+        brand: "lights.bio",
+        orderId: order._id.toString(),
+        orderNumber: order._id.toString().slice(-6).toUpperCase(),
+      },
     });
     order.razorpayPaymentLinkId = link.id;
     order.paymentUrl = link.short_url;
