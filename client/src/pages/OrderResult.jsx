@@ -85,7 +85,7 @@ export default function OrderResult({ success = false }) {
 
         const data = await response.json();
 
-        // Support direct and wrapped API responses.
+        // Support different API response structures.
         const orderData = data.order || data.data || data;
 
         if (!cancelled) {
@@ -199,6 +199,21 @@ export default function OrderResult({ success = false }) {
     // ========================================
 
     try {
+      let callbackCompleted = false;
+
+      const markAsTracked = () => {
+        if (callbackCompleted) return;
+
+        callbackCompleted = true;
+
+        try {
+          localStorage.setItem(storageKey, "tracked");
+        } catch (error) {
+          console.warn("Could not save tracking record:", error);
+        }
+      };
+
+      // Send conversion to Google Ads.
       window.gtag("event", "conversion", {
         send_to: GOOGLE_ADS_SEND_TO,
 
@@ -207,26 +222,26 @@ export default function OrderResult({ success = false }) {
         currency: "INR",
 
         transaction_id: transactionId,
+
+        // Callback runs after the tag processes
+        // the event, not after Google confirms
+        // attribution or reporting.
+        event_callback: markAsTracked,
       });
 
-      // Prevent duplicate events on refresh.
-      try {
-        localStorage.setItem(storageKey, "tracked");
-      } catch (error) {
-        console.warn("Could not save tracking record:", error);
-      }
+      // Fallback in case the callback does not run.
+      // This prevents repeated events on refresh.
+      window.setTimeout(() => {
+        markAsTracked();
+      }, 2000);
 
-      console.log("Google Ads Purchase Conversion Sent:", {
+      console.log("Google Ads Purchase Conversion Event Queued:", {
         conversionId: "AW-18247244209",
-
+        conversionLabel: "h5_fCMDnpLMdELGz-_xD",
         transactionId,
-
         value: conversionValue,
-
         currency: "INR",
-
         paymentMethod: order.paymentMethod,
-
         orderStatus: order.status,
       });
     } catch (error) {
@@ -343,7 +358,7 @@ export default function OrderResult({ success = false }) {
                 <span className="receipt__label">Order</span>
 
                 <strong className="receipt__id">
-                  #{order._id.slice(-6).toUpperCase()}
+                  #{String(order._id).slice(-6).toUpperCase()}
                 </strong>
               </div>
 
@@ -496,7 +511,7 @@ export default function OrderResult({ success = false }) {
 
           {order ? (
             <Link
-              to={`/track?order=${order._id.slice(-6).toUpperCase()}`}
+              to={`/track?order=${String(order._id).slice(-6).toUpperCase()}`}
               className="rbtn rbtn--ghost"
             >
               Track this order

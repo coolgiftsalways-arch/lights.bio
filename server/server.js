@@ -48,7 +48,7 @@ app.use(
       directives: {
         defaultSrc: ["'self'"],
 
-        // Google Ads scripts
+        // Scripts
         scriptSrc: [
           "'self'",
           "https://www.googletagmanager.com",
