@@ -6,10 +6,6 @@ require("dotenv").config({
 // DNS CONFIGURATION
 // ==========================================
 
-// Only needed on networks whose DNS can't resolve
-// MongoDB Atlas addresses.
-// Leave FORCE_PUBLIC_DNS unset on the live server.
-
 if (process.env.FORCE_PUBLIC_DNS === "true") {
   require("dns").setServers(["8.8.8.8", "1.1.1.1"]);
 }
@@ -52,7 +48,7 @@ app.use(
       directives: {
         defaultSrc: ["'self'"],
 
-        // Scripts
+        // Google Ads scripts
         scriptSrc: [
           "'self'",
           "https://www.googletagmanager.com",
@@ -68,6 +64,7 @@ app.use(
           "https://analytics.google.com",
           "https://www.googleadservices.com",
           "https://www.google.com",
+          "https://www.google.co.in",
           "https://googleads.g.doubleclick.net",
           "https://ad.doubleclick.net",
           "https://pagead2.googlesyndication.com",
@@ -150,7 +147,10 @@ app.use("/api/delivery", require("./routes/delivery"));
 
 app.use("/api/pincode", require("./routes/pincode"));
 
-// Health check
+// ==========================================
+// HEALTH CHECK
+// ==========================================
+
 app.get("/api/health", (req, res) => {
   res.json({
     status: "ok",
@@ -159,7 +159,6 @@ app.get("/api/health", (req, res) => {
 
 // ==========================================
 // API 404 HANDLER
-// Keep this AFTER all API routes.
 // ==========================================
 
 app.use("/api", (req, res) => {
@@ -183,12 +182,6 @@ if (fs.existsSync(dist)) {
   );
 
   // React Router fallback
-  // Handles website pages such as:
-  // /
-  // /products
-  // /checkout
-  // /order-success
-  // /admin/orders
 
   app.get(/^\/(?!api|images).*/, (req, res) => {
     res.sendFile(path.join(dist, "index.html"));
