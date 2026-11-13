@@ -23,10 +23,7 @@ import "../Style/OrderResult.css";
 // GOOGLE ADS PURCHASE CONVERSION
 // ==========================================
 
-// IMPORTANT:
-// Replace LABEL_HERE with your actual Google Ads conversion label.
-
-const GOOGLE_ADS_SEND_TO = "AW-18247244209/LABEL_HERE";
+const GOOGLE_ADS_SEND_TO = "AW-18247244209/h5_fCMDnpLMdELGz-_xD";
 
 // ==========================================
 // ORDER TRACKING
@@ -94,69 +91,82 @@ export default function OrderResult({ success = false }) {
   }, [success, orderId]);
 
   // ==========================================
-  // GOOGLE ADS PURCHASE TRACKING
+  // GOOGLE ADS PURCHASE CONVERSION
   // ==========================================
 
   useEffect(() => {
     if (!success || !order) return;
 
-    // Only track successfully confirmed orders.
-    // UPI = paid
-    // COD = confirmed
+    // Only track orders confirmed by the backend.
+    // UPI: paid
+    // COD: confirmed
 
     const validOrder = order.status === "paid" || order.status === "confirmed";
 
     if (!validOrder) return;
 
-    // Wait until Google tag is available.
-    if (typeof window.gtag !== "function") {
-      console.warn("Google Ads tag is not available.");
-      return;
-    }
-
     // Unique transaction ID.
     const transactionId = String(order._id);
 
-    // Prevent duplicate conversion events.
-    const storageKey = `google_ads_purchase_${transactionId}`;
-
-    if (localStorage.getItem(storageKey)) {
-      console.log("Purchase already tracked:", transactionId);
+    if (!transactionId || transactionId === "undefined") {
+      console.error("Invalid transaction ID.");
       return;
     }
 
-    // Your backend stores prices in paise.
-    // Google Ads requires the value in INR.
+    // Prevent duplicate conversions.
+    const storageKey = `google_ads_purchase_${transactionId}`;
 
+    try {
+      if (localStorage.getItem(storageKey)) {
+        console.log("Google Ads purchase already tracked:", transactionId);
+        return;
+      }
+    } catch (error) {
+      console.warn("Could not access localStorage:", error);
+    }
+
+    // Google tag should be installed in index.html.
+    if (typeof window.gtag !== "function") {
+      console.warn(
+        "Google Ads tag is unavailable. Purchase conversion not sent.",
+      );
+      return;
+    }
+
+    // Backend stores order amounts in paise.
+    // Convert paise into INR.
     const conversionValue = Number(order.amount) / 100;
 
     if (!Number.isFinite(conversionValue) || conversionValue <= 0) {
-      console.error("Invalid purchase value.");
+      console.error("Invalid Google Ads purchase value:", order.amount);
       return;
     }
 
-    // Send Google Ads purchase conversion.
+    try {
+      // Send Purchase conversion to Google Ads.
+      window.gtag("event", "conversion", {
+        send_to: GOOGLE_ADS_SEND_TO,
+        value: conversionValue,
+        currency: "INR",
+        transaction_id: transactionId,
+      });
 
-    window.gtag("event", "conversion", {
-      send_to: GOOGLE_ADS_SEND_TO,
+      // Save transaction ID after sending.
+      try {
+        localStorage.setItem(storageKey, "tracked");
+      } catch (error) {
+        console.warn("Could not save conversion tracking record:", error);
+      }
 
-      value: conversionValue,
-
-      currency: "INR",
-
-      transaction_id: transactionId,
-    });
-
-    // Save transaction ID to prevent duplicate tracking.
-
-    localStorage.setItem(storageKey, "tracked");
-
-    console.log("Google Ads Purchase Conversion Sent:", {
-      transactionId,
-      value: conversionValue,
-      currency: "INR",
-      paymentMethod: order.paymentMethod,
-    });
+      console.log("Google Ads Purchase Conversion Sent:", {
+        transactionId,
+        value: conversionValue,
+        currency: "INR",
+        paymentMethod: order.paymentMethod,
+      });
+    } catch (error) {
+      console.error("Google Ads conversion failed:", error);
+    }
   }, [success, order]);
 
   // ==========================================
@@ -243,8 +253,7 @@ export default function OrderResult({ success = false }) {
         <p className="result__text">
           {isCod ? (
             <>
-              Please keep
-              <strong>{order && formatPrice(order.amount)}</strong>
+              Please keep <strong>{order && formatPrice(order.amount)}</strong>{" "}
               ready to pay in cash when your order arrives.
             </>
           ) : (
