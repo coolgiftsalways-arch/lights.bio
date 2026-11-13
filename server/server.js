@@ -20,14 +20,46 @@ app.set("trust proxy", 1); // Hostinger sits behind a proxy; needed for correct 
 
 app.use(
   helmet({
-    crossOriginResourcePolicy: { policy: "cross-origin" },
+    crossOriginResourcePolicy: {
+      policy: "cross-origin",
+    },
+
     contentSecurityPolicy: {
       directives: {
-        "img-src": ["'self'", "data:", "blob:", "https:"], // product photos + hero images
-        "connect-src": ["'self'"],
+        defaultSrc: ["'self'"],
+
+        scriptSrc: [
+          "'self'",
+          "https://www.googletagmanager.com",
+          "https://www.google.com",
+          "https://googleads.g.doubleclick.net",
+        ],
+
+        connectSrc: [
+          "'self'",
+          "https://www.googletagmanager.com",
+          "https://www.google-analytics.com",
+          "https://analytics.google.com",
+          "https://www.googleadservices.com",
+          "https://www.google.com",
+          "https://googleads.g.doubleclick.net",
+          "https://pagead2.googlesyndication.com",
+        ],
+
+        imgSrc: ["'self'", "data:", "blob:", "https:"],
+
+        frameSrc: [
+          "'self'",
+          "https://www.google.com",
+          "https://td.doubleclick.net",
+        ],
+
+        objectSrc: ["'none'"],
+
+        upgradeInsecureRequests: isProd ? [] : null,
       },
     },
-  })
+  }),
 );
 app.use(cors({ origin: (process.env.CLIENT_URL || "http://localhost:5173").split(",") }));
 app.use(express.json());
