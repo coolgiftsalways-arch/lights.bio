@@ -53,9 +53,10 @@ export default function OrderResult({ success = false }) {
   const orderId = params.get("order");
 
   const [order, setOrder] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   // ==========================================
-  // FETCH ORDER
+  // FETCH ORDER FROM BACKEND
   // ==========================================
 
   useEffect(() => {
@@ -63,23 +64,41 @@ export default function OrderResult({ success = false }) {
       clearCart();
     }
 
-    if (!orderId) return;
+    if (!orderId) {
+      setLoading(false);
+      return;
+    }
 
     let cancelled = false;
 
     const fetchOrder = async () => {
       try {
+        setLoading(true);
+
+        console.log("Fetching order:", orderId);
+
         const response = await fetch(`${API}/orders/${orderId}`);
 
-        if (!response.ok) return;
+        if (!response.ok) {
+          throw new Error(`Order API error: ${response.status}`);
+        }
 
         const data = await response.json();
 
+        // Support direct and wrapped API responses.
+        const orderData = data.order || data.data || data;
+
         if (!cancelled) {
-          setOrder(data);
+          console.log("ORDER DATA:", orderData);
+
+          setOrder(orderData);
         }
       } catch (error) {
         console.error("Order fetching failed:", error);
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
     };
 
@@ -95,77 +114,123 @@ export default function OrderResult({ success = false }) {
   // ==========================================
 
   useEffect(() => {
-    if (!success || !order) return;
-
-    // Only track orders confirmed by the backend.
-    // UPI: paid
-    // COD: confirmed
-
-    const validOrder = order.status === "paid" || order.status === "confirmed";
-
-    if (!validOrder) return;
-
-    // Unique transaction ID.
-    const transactionId = String(order._id);
-
-    if (!transactionId || transactionId === "undefined") {
-      console.error("Invalid transaction ID.");
+    if (!success || !order) {
+      console.log("Purchase tracking waiting for order data.");
       return;
     }
 
-    // Prevent duplicate conversions.
+    console.log("Checking Google Ads purchase eligibility:", {
+      orderId: order._id,
+      status: order.status,
+      amount: order.amount,
+      paymentMethod: order.paymentMethod,
+    });
+
+    // ========================================
+    // VERIFY ORDER STATUS
+    // ========================================
+
+    const validOrder = order.status === "paid" || order.status === "confirmed";
+
+    if (!validOrder) {
+      console.warn(
+        "Purchase conversion not sent. Invalid order status:",
+        order.status,
+      );
+
+      return;
+    }
+
+    // ========================================
+    // TRANSACTION ID
+    // ========================================
+
+    const transactionId = String(order._id || "");
+
+    if (!transactionId || transactionId === "undefined") {
+      console.error("Google Ads: Invalid transaction ID.");
+
+      return;
+    }
+
+    // ========================================
+    // DUPLICATE PREVENTION
+    // ========================================
+
     const storageKey = `google_ads_purchase_${transactionId}`;
 
     try {
       if (localStorage.getItem(storageKey)) {
-        console.log("Google Ads purchase already tracked:", transactionId);
+        console.log("Purchase already tracked:", transactionId);
+
         return;
       }
     } catch (error) {
-      console.warn("Could not access localStorage:", error);
+      console.warn("LocalStorage unavailable:", error);
     }
 
-    // Google tag should be installed in index.html.
+    // ========================================
+    // GOOGLE TAG CHECK
+    // ========================================
+
     if (typeof window.gtag !== "function") {
-      console.warn(
-        "Google Ads tag is unavailable. Purchase conversion not sent.",
-      );
+      console.error("Google Ads gtag is not initialized.");
+
       return;
     }
 
-    // Backend stores order amounts in paise.
-    // Convert paise into INR.
+    // ========================================
+    // CONVERSION VALUE
+    // ========================================
+
+    // Backend stores amounts in paise.
+    // Google Ads expects INR.
+
     const conversionValue = Number(order.amount) / 100;
 
     if (!Number.isFinite(conversionValue) || conversionValue <= 0) {
-      console.error("Invalid Google Ads purchase value:", order.amount);
+      console.error("Invalid purchase conversion value:", order.amount);
+
       return;
     }
 
+    // ========================================
+    // SEND PURCHASE EVENT
+    // ========================================
+
     try {
-      // Send Purchase conversion to Google Ads.
       window.gtag("event", "conversion", {
         send_to: GOOGLE_ADS_SEND_TO,
+
         value: conversionValue,
+
         currency: "INR",
+
         transaction_id: transactionId,
       });
 
-      // Save transaction ID after sending.
+      // Prevent duplicate events on refresh.
       try {
         localStorage.setItem(storageKey, "tracked");
       } catch (error) {
-        console.warn("Could not save conversion tracking record:", error);
+        console.warn("Could not save tracking record:", error);
       }
 
       console.log("Google Ads Purchase Conversion Sent:", {
+        conversionId: "AW-18247244209",
+
         transactionId,
+
         value: conversionValue,
+
         currency: "INR",
+
         paymentMethod: order.paymentMethod,
+
+        orderStatus: order.status,
       });
     } catch (error) {
-      console.error("Google Ads conversion failed:", error);
+      console.error("Google Ads conversion error:", error);
     }
   }, [success, order]);
 
@@ -261,12 +326,18 @@ export default function OrderResult({ success = false }) {
           )}
         </p>
 
-        {/* ======================================
+        {/* ==================================
             ORDER RECEIPT
-        ====================================== */}
+        ================================== */}
+
+        {loading && (
+          <p className="result__text">Loading your order details...</p>
+        )}
 
         {order && (
           <div className="receipt">
+            {/* ORDER HEADER */}
+
             <div className="receipt__head">
               <div>
                 <span className="receipt__label">Order</span>
@@ -294,7 +365,7 @@ export default function OrderResult({ success = false }) {
             {/* PRODUCT ITEMS */}
 
             <ul className="receipt__items">
-              {order.items.map((item, i) => (
+              {order.items?.map((item, i) => (
                 <li key={i}>
                   {item.product?.images?.[0] ? (
                     <img src={imageUrl(item.product.images[0])} alt="" />
@@ -410,9 +481,9 @@ export default function OrderResult({ success = false }) {
           </div>
         )}
 
-        {/* ======================================
+        {/* ==================================
             ACTION BUTTONS
-        ====================================== */}
+        ================================== */}
 
         <div className="result__actions">
           <Link to="/products" className="rbtn rbtn--primary">
