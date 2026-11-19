@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="en">
 
@@ -23,6 +24,40 @@
     gtag('config', 'AW-18247244209');
   </script>
 
+  <!-- Meta Pixel Code -->
+  <script>
+    !function(f,b,e,v,n,t,s)
+    {
+      if(f.fbq)return;
+      n=f.fbq=function(){
+        n.callMethod ?
+        n.callMethod.apply(n,arguments) : n.queue.push(arguments)
+      };
+
+      if(!f._fbq)f._fbq=n;
+      n.push=n;
+      n.loaded=!0;
+      n.version='2.0';
+      n.queue=[];
+
+      t=b.createElement(e);
+      t.async=!0;
+      t.src=v;
+
+      s=b.getElementsByTagName(e)[0];
+      s.parentNode.insertBefore(t,s);
+
+    }(window, document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+
+    // Initialize Meta Pixel
+    fbq('init', '1761236734955235');
+
+    // Track PageView
+    fbq('track', 'PageView');
+  </script>
+  <!-- End Meta Pixel Code -->
+
   <!-- Website Favicon -->
   <link rel="icon" type="image/png" href="/Logo/Logo.png" />
 
@@ -33,7 +68,10 @@
   <meta name="theme-color" content="#101810" />
 
   <!-- SEO Description -->
-  <meta name="description" content="lights.bio - Discover beautiful plants and bring nature into your space." />
+  <meta
+    name="description"
+    content="lights.bio - Discover beautiful plants and bring nature into your space."
+  />
 
   <!-- Website Title -->
   <title>lights.bio | India</title>
@@ -42,6 +80,17 @@
 
 <body>
 
+  <!-- Meta Pixel NoScript Fallback -->
+  <noscript>
+    <img
+      height="1"
+      width="1"
+      style="display:none"
+      src="https://www.facebook.com/tr?id=1761236734955235&ev=PageView&noscript=1"
+      alt=""
+    />
+  </noscript>
+
   <!-- React Application -->
   <div id="root"></div>
 
@@ -49,5 +98,4 @@
   <script type="module" src="/src/main.jsx"></script>
 
 </body>
-
 </html>
