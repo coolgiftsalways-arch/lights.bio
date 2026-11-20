@@ -1,3 +1,4 @@
+
 require("dotenv").config({
   path: require("path").join(__dirname, ".env"),
   quiet: true,
@@ -88,7 +89,12 @@ app.use(
         ],
 
         // Images
-        imgSrc: ["'self'", "data:", "blob:", "https:"],
+        imgSrc: [
+          "'self'",
+          "data:",
+          "blob:",
+          "https:",
+        ],
 
         // Frames
         frameSrc: [
@@ -104,16 +110,27 @@ app.use(
         ],
 
         // Fonts
-        fontSrc: ["'self'", "data:", "https:"],
+        fontSrc: [
+          "'self'",
+          "data:",
+          "https:",
+        ],
 
         // Styles
-        styleSrc: ["'self'", "'unsafe-inline'", "https:"],
+        styleSrc: [
+          "'self'",
+          "'unsafe-inline'",
+          "https:",
+        ],
 
         // Form submission destinations
         formAction: [
           "'self'",
           "https://api.razorpay.com",
           "https://checkout.razorpay.com",
+
+          // Meta Pixel tracking
+          "https://www.facebook.com",
         ],
 
         // Objects
