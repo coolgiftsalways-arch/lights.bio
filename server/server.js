@@ -5,8 +5,6 @@ require("dotenv").config({
 
 // ==========================================
 // DNS CONFIGURATION
-// Only needed on networks whose DNS can't resolve MongoDB Atlas "mongodb+srv"
-// addresses (your home PC). Leave FORCE_PUBLIC_DNS unset on the live server.
 // ==========================================
 
 if (process.env.FORCE_PUBLIC_DNS === "true") {
@@ -32,14 +30,13 @@ const helmet = require("helmet");
 const app = express();
 
 const isProd = process.env.NODE_ENV === "production";
-
 const PORT = process.env.PORT || 5000;
 
-// Hostinger sits behind a proxy; needed for correct IPs + rate limiting
+// Hostinger proxy
 app.set("trust proxy", 1);
 
 // ==========================================
-// HELMET SECURITY + GOOGLE ADS / ANALYTICS CSP
+// HELMET SECURITY + META PIXEL + GOOGLE CSP
 // ==========================================
 
 app.use(
@@ -52,31 +49,46 @@ app.use(
       directives: {
         defaultSrc: ["'self'"],
 
-        // Scripts
+        // JavaScript sources
         scriptSrc: [
           "'self'",
           "https://www.googletagmanager.com",
           "https://www.google.com",
           "https://googleads.g.doubleclick.net",
+          "https://connect.facebook.net",
         ],
 
-        // Google Ads and Analytics connections
+        // API connections and tracking
         connectSrc: [
           "'self'",
+
+          // Google Analytics
           "https://www.googletagmanager.com",
           "https://www.google-analytics.com",
           "https://*.google-analytics.com",
           "https://analytics.google.com",
+
+          // Google Ads
           "https://www.googleadservices.com",
           "https://www.google.com",
           "https://www.google.co.in",
           "https://googleads.g.doubleclick.net",
           "https://ad.doubleclick.net",
           "https://pagead2.googlesyndication.com",
+
+          // Meta Pixel
+          "https://connect.facebook.net",
+          "https://www.facebook.com",
+          "https://graph.facebook.com",
         ],
 
-        // Images (product photos + hero images)
-        imgSrc: ["'self'", "data:", "blob:", "https:"],
+        // Images
+        imgSrc: [
+          "'self'",
+          "data:",
+          "blob:",
+          "https:",
+        ],
 
         // Frames
         frameSrc: [
@@ -84,13 +96,22 @@ app.use(
           "https://www.google.com",
           "https://td.doubleclick.net",
           "https://www.googletagmanager.com",
+          "https://www.facebook.com",
         ],
 
         // Fonts
-        fontSrc: ["'self'", "data:", "https:"],
+        fontSrc: [
+          "'self'",
+          "data:",
+          "https:",
+        ],
 
         // Styles
-        styleSrc: ["'self'", "'unsafe-inline'", "https:"],
+        styleSrc: [
+          "'self'",
+          "'unsafe-inline'",
+          "https:",
+        ],
 
         // Objects
         objectSrc: ["'none'"],
@@ -128,7 +149,6 @@ app.use(express.json());
 
 // ==========================================
 // STATIC PRODUCT IMAGES
-// /images/products/<slug>/1.jpg
 // ==========================================
 
 app.use(
@@ -157,12 +177,14 @@ app.get("/api/health", (req, res) => {
   res.json({
     status: "ok",
     database:
-      mongoose.connection.readyState === 1 ? "connected" : "not connected",
+      mongoose.connection.readyState === 1
+        ? "connected"
+        : "not connected",
   });
 });
 
 // ==========================================
-// API 404 HANDLER (must stay after all API routes)
+// API 404 HANDLER
 // ==========================================
 
 app.use("/api", (req, res) => {
@@ -172,7 +194,7 @@ app.use("/api", (req, res) => {
 });
 
 // ==========================================
-// REACT FRONTEND (client/dist), served from the same domain
+// REACT FRONTEND (client/dist)
 // ==========================================
 
 const dist = path.join(__dirname, "..", "client", "dist");
@@ -185,8 +207,6 @@ if (fs.existsSync(dist)) {
     }),
   );
 
-  // Any other URL (/, /products, /admin/orders, ...) -> index.html,
-  // React Router takes over
   app.get(/^\/(?!api|images).*/, (req, res) => {
     res.sendFile(path.join(dist, "index.html"));
   });
@@ -194,8 +214,6 @@ if (fs.existsSync(dist)) {
 
 // ==========================================
 // START SERVER
-// Start listening straight away so Hostinger sees the app as running,
-// then connect to MongoDB in the background.
 // ==========================================
 
 app.listen(PORT, () => {
