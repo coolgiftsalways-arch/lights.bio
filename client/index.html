@@ -1,12 +1,15 @@
-
 <!doctype html>
 <html lang="en">
 
 <head>
   <meta charset="UTF-8" />
 
+  <!-- Responsive Viewport -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
   <!-- Google Analytics + Google Ads Global Tag -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-44VJ0V3EMD"></script>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-44VJ0V3EMD">
+  </script>
 
   <script>
     window.dataLayer = window.dataLayer || [];
@@ -24,78 +27,77 @@
     gtag('config', 'AW-18247244209');
   </script>
 
+
   <!-- Meta Pixel Code -->
   <script>
-    !function(f,b,e,v,n,t,s)
-    {
-      if(f.fbq)return;
-      n=f.fbq=function(){
+    !function (f, b, e, v, n, t, s) {
+      if (f.fbq) return;
+
+      n = f.fbq = function () {
         n.callMethod ?
-        n.callMethod.apply(n,arguments) : n.queue.push(arguments)
+          n.callMethod.apply(n, arguments) :
+          n.queue.push(arguments)
       };
 
-      if(!f._fbq)f._fbq=n;
-      n.push=n;
-      n.loaded=!0;
-      n.version='2.0';
-      n.queue=[];
+      if (!f._fbq) f._fbq = n;
 
-      t=b.createElement(e);
-      t.async=!0;
-      t.src=v;
+      n.push = n;
+      n.loaded = !0;
+      n.version = '2.0';
+      n.queue = [];
 
-      s=b.getElementsByTagName(e)[0];
-      s.parentNode.insertBefore(t,s);
+      t = b.createElement(e);
+      t.async = !0;
+      t.src = v;
 
-    }(window, document,'script',
-    'https://connect.facebook.net/en_US/fbevents.js');
+      s = b.getElementsByTagName(e)[0];
+      s.parentNode.insertBefore(t, s);
+
+    }(window, document, 'script',
+      'https://connect.facebook.net/en_US/fbevents.js');
 
     // Initialize Meta Pixel
     fbq('init', '1761236734955235');
 
-    // Track PageView
+    // Track website visits
     fbq('track', 'PageView');
+
   </script>
   <!-- End Meta Pixel Code -->
 
+
   <!-- Website Favicon -->
   <link rel="icon" type="image/png" href="/Logo/Logo.png" />
-
-  <!-- Responsive Viewport -->
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <!-- Theme Color -->
   <meta name="theme-color" content="#101810" />
 
   <!-- SEO Description -->
-  <meta
-    name="description"
-    content="lights.bio - Discover beautiful plants and bring nature into your space."
-  />
+  <meta name="description" content="lights.bio - Discover beautiful plants and bring nature into your space." />
 
   <!-- Website Title -->
   <title>lights.bio | India</title>
 
 </head>
 
+
 <body>
 
   <!-- Meta Pixel NoScript Fallback -->
   <noscript>
-    <img
-      height="1"
-      width="1"
-      style="display:none"
-      src="https://www.facebook.com/tr?id=1761236734955235&ev=PageView&noscript=1"
-      alt=""
-    />
+    <img height="1" width="1" style="display:none"
+      src="https://www.facebook.com/tr?id=1761236734955235&ev=PageView&noscript=1" alt="" />
   </noscript>
+
 
   <!-- React Application -->
   <div id="root"></div>
 
+
   <!-- React Entry Point -->
-  <script type="module" src="/src/main.jsx"></script>
+  <script type="module" src="/src/main.jsx">
+  </script>
 
 </body>
+
 </html>
