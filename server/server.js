@@ -36,7 +36,7 @@ const PORT = process.env.PORT || 5000;
 app.set("trust proxy", 1);
 
 // ==========================================
-// HELMET SECURITY + META PIXEL + GOOGLE CSP
+// HELMET SECURITY + META PIXEL + RAZORPAY CSP
 // ==========================================
 
 app.use(
@@ -56,6 +56,7 @@ app.use(
           "https://www.google.com",
           "https://googleads.g.doubleclick.net",
           "https://connect.facebook.net",
+          "https://checkout.razorpay.com",
         ],
 
         // API connections and tracking
@@ -80,15 +81,14 @@ app.use(
           "https://connect.facebook.net",
           "https://www.facebook.com",
           "https://graph.facebook.com",
+
+          // Razorpay
+          "https://api.razorpay.com",
+          "https://checkout.razorpay.com",
         ],
 
         // Images
-        imgSrc: [
-          "'self'",
-          "data:",
-          "blob:",
-          "https:",
-        ],
+        imgSrc: ["'self'", "data:", "blob:", "https:"],
 
         // Frames
         frameSrc: [
@@ -97,20 +97,23 @@ app.use(
           "https://td.doubleclick.net",
           "https://www.googletagmanager.com",
           "https://www.facebook.com",
+
+          // Razorpay checkout
+          "https://api.razorpay.com",
+          "https://checkout.razorpay.com",
         ],
 
         // Fonts
-        fontSrc: [
-          "'self'",
-          "data:",
-          "https:",
-        ],
+        fontSrc: ["'self'", "data:", "https:"],
 
         // Styles
-        styleSrc: [
+        styleSrc: ["'self'", "'unsafe-inline'", "https:"],
+
+        // Form submission destinations
+        formAction: [
           "'self'",
-          "'unsafe-inline'",
-          "https:",
+          "https://api.razorpay.com",
+          "https://checkout.razorpay.com",
         ],
 
         // Objects
@@ -118,9 +121,6 @@ app.use(
 
         // Base URI
         baseUri: ["'self'"],
-
-        // Form actions
-        formAction: ["'self'"],
 
         // Upgrade HTTP requests in production
         upgradeInsecureRequests: isProd ? [] : null,
@@ -177,9 +177,7 @@ app.get("/api/health", (req, res) => {
   res.json({
     status: "ok",
     database:
-      mongoose.connection.readyState === 1
-        ? "connected"
-        : "not connected",
+      mongoose.connection.readyState === 1 ? "connected" : "not connected",
   });
 });
 
