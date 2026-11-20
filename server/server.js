@@ -33,7 +33,6 @@ const app = express();
 const isProd = process.env.NODE_ENV === "production";
 const PORT = process.env.PORT || 5000;
 
-// Hostinger proxy
 app.set("trust proxy", 1);
 
 // ==========================================
@@ -50,7 +49,7 @@ app.use(
       directives: {
         defaultSrc: ["'self'"],
 
-        // JavaScript sources
+        // JavaScript
         scriptSrc: [
           "'self'",
           "https://www.googletagmanager.com",
@@ -104,7 +103,7 @@ app.use(
           "https://www.googletagmanager.com",
           "https://www.facebook.com",
 
-          // Razorpay checkout
+          // Razorpay
           "https://api.razorpay.com",
           "https://checkout.razorpay.com",
         ],
@@ -123,23 +122,18 @@ app.use(
           "https:",
         ],
 
-        // Form submission destinations
+        // Form submissions
         formAction: [
           "'self'",
           "https://api.razorpay.com",
           "https://checkout.razorpay.com",
-
-          // Meta Pixel tracking
           "https://www.facebook.com",
         ],
 
-        // Objects
+        // Security
         objectSrc: ["'none'"],
-
-        // Base URI
         baseUri: ["'self'"],
 
-        // Upgrade HTTP requests in production
         upgradeInsecureRequests: isProd ? [] : null,
       },
     },
@@ -194,7 +188,9 @@ app.get("/api/health", (req, res) => {
   res.json({
     status: "ok",
     database:
-      mongoose.connection.readyState === 1 ? "connected" : "not connected",
+      mongoose.connection.readyState === 1
+        ? "connected"
+        : "not connected",
   });
 });
 
