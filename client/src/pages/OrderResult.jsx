@@ -20,10 +20,10 @@ import { deliveryWindow } from "../pricing";
 import "../Style/OrderResult.css";
 
 // ==========================================
-// GOOGLE ADS PURCHASE CONVERSION
+// META PIXEL CONFIGURATION
 // ==========================================
 
-const GOOGLE_ADS_SEND_TO = "AW-18247244209/h5_fCMDnpLMdELGz-_xD";
+const META_PIXEL_ID = "1761236734955235";
 
 // ==========================================
 // ORDER TRACKING
@@ -90,7 +90,6 @@ export default function OrderResult({ success = false }) {
 
         if (!cancelled) {
           console.log("ORDER DATA:", orderData);
-
           setOrder(orderData);
         }
       } catch (error) {
@@ -110,16 +109,16 @@ export default function OrderResult({ success = false }) {
   }, [success, orderId]);
 
   // ==========================================
-  // GOOGLE ADS PURCHASE CONVERSION
+  // META ADS PURCHASE CONVERSION
   // ==========================================
 
   useEffect(() => {
     if (!success || !order) {
-      console.log("Purchase tracking waiting for order data.");
+      console.log("Meta Purchase waiting for order data.");
       return;
     }
 
-    console.log("Checking Google Ads purchase eligibility:", {
+    console.log("Checking Meta Purchase eligibility:", {
       orderId: order._id,
       status: order.status,
       amount: order.amount,
@@ -127,16 +126,16 @@ export default function OrderResult({ success = false }) {
     });
 
     // ========================================
-    // VERIFY ORDER STATUS
+    // VERIFY SUCCESSFUL ONLINE PAYMENT
     // ========================================
 
-    const validOrder = order.status === "paid" || order.status === "confirmed";
+    // Only count successfully paid UPI orders.
+    // COD is not an online purchase yet.
+
+    const validOrder = order.status === "paid" && order.paymentMethod === "upi";
 
     if (!validOrder) {
-      console.warn(
-        "Purchase conversion not sent. Invalid order status:",
-        order.status,
-      );
+      console.log("Meta Purchase not sent. Order is not a paid UPI order.");
 
       return;
     }
@@ -148,8 +147,7 @@ export default function OrderResult({ success = false }) {
     const transactionId = String(order._id || "");
 
     if (!transactionId || transactionId === "undefined") {
-      console.error("Google Ads: Invalid transaction ID.");
-
+      console.error("Meta Purchase: Invalid transaction ID.");
       return;
     }
 
@@ -157,95 +155,103 @@ export default function OrderResult({ success = false }) {
     // DUPLICATE PREVENTION
     // ========================================
 
-    const storageKey = `google_ads_purchase_${transactionId}`;
+    const storageKey = `meta_purchase_${transactionId}`;
 
     try {
       if (localStorage.getItem(storageKey)) {
-        console.log("Purchase already tracked:", transactionId);
+        console.log("Meta Purchase already tracked:", transactionId);
 
         return;
       }
     } catch (error) {
       console.warn("LocalStorage unavailable:", error);
+      return;
     }
 
     // ========================================
-    // GOOGLE TAG CHECK
+    // META PIXEL CHECK
     // ========================================
 
-    if (typeof window.gtag !== "function") {
-      console.error("Google Ads gtag is not initialized.");
+    if (typeof window.fbq !== "function") {
+      console.error("Meta Pixel is not initialized. Purchase not sent.");
 
       return;
     }
 
     // ========================================
-    // CONVERSION VALUE
+    // PURCHASE VALUE
     // ========================================
 
-    // Backend stores amounts in paise.
-    // Google Ads expects INR.
+    // Razorpay and the backend store the amount in paise.
+    // Meta expects the amount in rupees.
 
-    const conversionValue = Number(order.amount) / 100;
+    const purchaseValue = Number(order.amount) / 100;
 
-    if (!Number.isFinite(conversionValue) || conversionValue <= 0) {
-      console.error("Invalid purchase conversion value:", order.amount);
+    if (!Number.isFinite(purchaseValue) || purchaseValue <= 0) {
+      console.error("Invalid Meta Purchase amount:", order.amount);
 
       return;
     }
 
     // ========================================
-    // SEND PURCHASE EVENT
+    // PRODUCT INFORMATION
+    // ========================================
+
+    const contentIds = (order.items || [])
+      .map((item) => {
+        const product = item.product;
+
+        return String(product?._id || product || "");
+      })
+      .filter(Boolean);
+
+    const numberOfItems = (order.items || []).reduce(
+      (total, item) => total + Number(item.quantity || 0),
+      0,
+    );
+
+    // ========================================
+    // SEND META PURCHASE EVENT
     // ========================================
 
     try {
-      let callbackCompleted = false;
+      // Store transaction ID to prevent duplicate events
+      // when the customer refreshes the success page.
 
-      const markAsTracked = () => {
-        if (callbackCompleted) return;
+      localStorage.setItem(storageKey, "sent");
 
-        callbackCompleted = true;
+      window.fbq(
+        "track",
+        "Purchase",
+        {
+          value: purchaseValue,
+          currency: "INR",
+          content_type: "product",
+          content_ids: contentIds,
+          num_items: numberOfItems,
+        },
+        {
+          eventID: transactionId,
+        },
+      );
 
-        try {
-          localStorage.setItem(storageKey, "tracked");
-        } catch (error) {
-          console.warn("Could not save tracking record:", error);
-        }
-      };
-
-      // Send conversion to Google Ads.
-      window.gtag("event", "conversion", {
-        send_to: GOOGLE_ADS_SEND_TO,
-
-        value: conversionValue,
-
-        currency: "INR",
-
-        transaction_id: transactionId,
-
-        // Callback runs after the tag processes
-        // the event, not after Google confirms
-        // attribution or reporting.
-        event_callback: markAsTracked,
-      });
-
-      // Fallback in case the callback does not run.
-      // This prevents repeated events on refresh.
-      window.setTimeout(() => {
-        markAsTracked();
-      }, 2000);
-
-      console.log("Google Ads Purchase Conversion Event Queued:", {
-        conversionId: "AW-18247244209",
-        conversionLabel: "h5_fCMDnpLMdELGz-_xD",
+      console.log("META PURCHASE EVENT SENT:", {
+        pixelId: META_PIXEL_ID,
         transactionId,
-        value: conversionValue,
+        value: purchaseValue,
         currency: "INR",
-        paymentMethod: order.paymentMethod,
-        orderStatus: order.status,
+        contentIds,
+        numberOfItems,
       });
     } catch (error) {
-      console.error("Google Ads conversion error:", error);
+      // Allow another attempt if the tracking call throws.
+      try {
+        localStorage.removeItem(storageKey);
+      } catch (storageError) {
+        console.warn("Could not reset tracking record:", storageError);
+      }
+
+      console.error("Meta Purchase tracking error:", error);
     }
   }, [success, order]);
 
